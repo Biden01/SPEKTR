@@ -14,8 +14,12 @@ const LandingScreen = ({ onLogin, onStudy }) => (
           <h1 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 64, lineHeight: 1.05, letterSpacing: '-0.025em', margin: 0 }}>
             Единая система проверки знаний<br/>и тестирования <span style={{ color: '#1B4B7A' }}>работников</span>
           </h1>
-          <p className="s-hero-sub" style={{ fontSize: 18, color: '#5B6778', lineHeight: 1.6, margin: '24px 0 40px', maxWidth: 560 }}>
-            Ежедневные и ежегодные проверки, видеоуроки, теоретические экзамены и протоколы смертельных опасностей — в едином промышленном контуре СПЕКТР.
+          <div className="s-hero-acronym" style={{ display: 'inline-flex', alignItems: 'baseline', gap: 10, marginTop: 20, padding: '10px 16px', background: '#EEF3F8', borderLeft: '3px solid #1B4B7A', borderRadius: '0 6px 6px 0' }}>
+            <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 15, color: '#1B4B7A', letterSpacing: '.02em' }}>СПЕКТР</span>
+            <span style={{ fontSize: 14, color: '#2F3B4D', lineHeight: 1.4 }}>— Система Проверки Единых Компетенций и Тестирования Работников</span>
+          </div>
+          <p className="s-hero-sub" style={{ fontSize: 18, color: '#5B6778', lineHeight: 1.6, margin: '20px 0 40px', maxWidth: 560 }}>
+            Ежедневные и ежегодные проверки, видеоуроки, теоретические экзамены и протоколы смертельных опасностей — в едином промышленном контуре.
           </p>
           <div className="s-hero-cta" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             <Button size="lg" onClick={onLogin} iconRight="arrow">Вход для сотрудников ВТС</Button>
