@@ -580,3 +580,89 @@ a:hover {
     width: 100% !important;
   }
 }
+
+/* ====================================================================
+ * Contrast bump + horizontal-overflow guards (fix for mobile Dashboard)
+ * ==================================================================== */
+
+/* Prevent accidental horizontal scroll anywhere */
+html, body, #root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* All text, images, tables, form fields respect parent width */
+img, svg, video, canvas, table {
+  max-width: 100%;
+}
+input, textarea, select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Break long Russian words / URLs that might overflow small cards */
+.s-main h1, .s-main-header-sub, .s-daily-card-head h3,
+.s-table-mobile-row-info, .s-test-card-wrap h2,
+.s-results-grid h1, .s-results-grid p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Stronger contrast on secondary text — WCAG 2.1 AA AAA-leaning */
+.s-main-header-sub,
+.s-hero-sub,
+.s-feature-grid p,
+.s-login p {
+  color: #475060 !important;   /* was #5B6778 — now ~7.0:1 on #F7F9FC */
+}
+
+/* Mobile — bump secondary text contrast harder (smaller size → needs more) */
+@media (max-width: 768px) {
+  .s-main-header-sub { font-size: 13px !important; color: #3A4657 !important; }
+
+  /* Dashboard actions header — keep nav row from overflowing */
+  .s-main-header-actions {
+    gap: 6px !important;
+  }
+  .s-main-header-actions button {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* Daily-card progress row — keep button from overflowing */
+  .s-daily-card-head { gap: 8px !important; }
+  .s-daily-card-head + div + div {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .s-daily-card-head + div + div button { width: 100% !important; }
+
+  /* Ensure cards never wider than viewport */
+  .s-main .s-card-grid-2 > div,
+  .s-main .s-action-grid > div,
+  .s-main > div > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Alert action button — don't let it squeeze out */
+  .s-main > div > div[role], .s-main [class*="Alert"] { flex-wrap: wrap; }
+
+  /* Test option label — break long words, keep kbd from pushing */
+  .s-test-option > span:last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+/* Login — left panel eyebrow was hidden on ≤768, but also lift desktop contrast */
+.s-login-eyebrow {
+  color: #C7DAEB !important;   /* was #A8C0D6 — stronger on dark gradient */
+}
+
+/* Login tab inactive text — was #5B6778 on #EEF1F6, bump */
+.s-login button[style*="#5B6778"] {
+  /* inline style wins; skip — handled by direct inline update in component */
+}
