@@ -14,7 +14,7 @@ const LoginScreen = ({ onEnter, onBack }) => {
           <img src={LOGO_WHITE} className="s-login-logo" style={{ height: 40 }} alt=""/>
         </div>
         <div style={{ marginTop: 'auto', position: 'relative' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#A8C0D6', marginBottom: 14 }}>СПЕКТР · Система Проверки Единых Компетенций и Тестирования Работников</div>
+          <div className="s-login-eyebrow" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#A8C0D6', marginBottom: 14 }}>СПЕКТР · Система Проверки Единых Компетенций и Тестирования Работников</div>
           <h1 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 44, lineHeight: 1.1, letterSpacing: '-0.02em', margin: 0 }}>Вход в корпоративный портал</h1>
           <p className="s-login-left-sub" style={{ fontSize: 16, color: '#A8C0D6', lineHeight: 1.6, marginTop: 16, maxWidth: 440 }}>Используйте табельный номер для входа как сотрудник ВТС или зарегистрируйтесь во внешнем Учебном центре.</p>
         </div>
