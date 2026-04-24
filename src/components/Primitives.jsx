@@ -38,10 +38,12 @@ export const Button = ({ children, variant = 'primary', size = 'md', icon, iconR
       onClick={isDisabled ? undefined : onClick}
       disabled={isDisabled}
       aria-busy={loading || undefined}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => { setHover(false); setActive(false); }}
-      onMouseDown={() => setActive(true)}
-      onMouseUp={() => setActive(false)}
+      className="s-btn"
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHover(true); }}
+      onPointerLeave={() => { setHover(false); setActive(false); }}
+      onPointerDown={() => setActive(true)}
+      onPointerUp={() => setActive(false)}
+      onPointerCancel={() => setActive(false)}
       style={{
         ...base,
         ...sizes[size],
@@ -79,18 +81,29 @@ export const Chip = ({ tone = 'neutral', children }) => {
   );
 };
 
-export const Card = ({ children, style, padding = 24, onClick, hoverable, className }) => {
+export const Card = ({ children, style, padding = 24, onClick, hoverable, className, ariaLabel }) => {
   const [hover, setHover] = useState(false);
-  const isInteractive = onClick || hoverable;
-  const hoverStyle = isInteractive && hover ? { transform: 'translateY(-2px)', boxShadow: '0 10px 30px rgba(26,35,50,0.10)', borderColor: '#D6E2ED' } : {};
+  const isInteractive = !!onClick;
+  const canHover = isInteractive || hoverable;
+  const hoverStyle = canHover && hover ? { transform: 'translateY(-2px)', boxShadow: '0 10px 30px rgba(26,35,50,0.10)', borderColor: '#D6E2ED' } : {};
+  // Keyboard: Enter / Space activate when card is a button surrogate
+  const onKeyDown = isInteractive ? (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(e); }
+  } : undefined;
   return (
-    <div onClick={onClick} className={className}
-      onMouseEnter={() => isInteractive && setHover(true)}
-      onMouseLeave={() => setHover(false)}
+    <div
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={isInteractive ? ariaLabel : undefined}
+      className={`${className || ''}${isInteractive ? ' s-card-interactive' : ''}`.trim()}
+      onPointerEnter={(e) => { if (canHover && e.pointerType === 'mouse') setHover(true); }}
+      onPointerLeave={() => setHover(false)}
       style={{
         background: '#fff', border: '1px solid #E4E8EF', borderRadius: 12,
         boxShadow: '0 4px 20px rgba(26,35,50,0.06)', padding,
-        cursor: isInteractive ? 'pointer' : 'default',
+        cursor: canHover ? 'pointer' : 'default',
         transition: 'all 180ms cubic-bezier(.2,0,0,1)',
         ...style, ...hoverStyle,
       }}>{children}</div>
@@ -107,12 +120,16 @@ export const Alert = ({ tone = 'info', title, description, action, onAction }) =
   };
   const t = tones[tone];
   return (
-    <div role={ariaRole} aria-live={tone === 'bad' ? 'assertive' : tone === 'warn' ? 'polite' : undefined}
+    <div
       style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 12, border: `1px solid ${t.border}`, background: t.bg, alignItems: 'center' }}>
       <div style={{ width: 36, height: 36, borderRadius: 8, background: t.ic, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon name={t.icName} size={18} color="#fff" />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Text region is the live-region; the action button is intentionally outside so SR doesn't announce it inline */}
+      <div
+        role={ariaRole}
+        aria-live={tone === 'bad' ? 'assertive' : tone === 'warn' ? 'polite' : undefined}
+        style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: '#1A2332', marginBottom: 2 }}>{title}</div>
         {description && <div style={{ fontSize: 13, color: '#475060' }}>{description}</div>}
       </div>
@@ -121,25 +138,56 @@ export const Alert = ({ tone = 'info', title, description, action, onAction }) =
   );
 };
 
-export const TopBar = ({ onLogin, onRegister }) => (
-  <header className="s-topbar" style={{ height: 72, background: '#fff', borderBottom: '1px solid #E4E8EF', display: 'flex', alignItems: 'center', padding: '0 40px', position: 'sticky', top: 0, zIndex: 10 }}>
-    <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-      <img src={MARK} className="s-topbar-logo-img" style={{ height: 36 }} alt="" />
-      <span className="s-topbar-logo-text" style={{ fontFamily: 'Manrope, Inter, sans-serif', fontWeight: 800, fontSize: 22, color: '#1A2332', letterSpacing: '-0.01em' }}>СПЕКТР</span>
-    </a>
-    <nav className="s-topbar-nav" style={{ display: 'flex', gap: 28, marginLeft: 48 }}>
-      {['О системе', 'Учебный центр', 'Документы', 'Контакты'].map(l => (
-        <a key={l} href="#" style={{ color: '#2F3B4D', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>{l}</a>
-      ))}
-    </nav>
-    <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
-      <Button variant="ghost" onClick={onLogin}>Войти</Button>
-      <span className="s-topbar-register" style={{ display: 'contents' }}>
-        <Button variant="success" icon="graduation" onClick={onRegister}>Регистрация в Учебном центре</Button>
-      </span>
-    </div>
-  </header>
-);
+export const TopBar = ({ onLogin, onRegister, onHome }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  return (
+    <header className="s-topbar" style={{ height: 72, background: '#fff', borderBottom: '1px solid #E4E8EF', display: 'flex', alignItems: 'center', padding: '0 40px', position: 'sticky', top: 0, zIndex: 10 }}>
+      <a href="#" onClick={(e) => { e.preventDefault(); onHome && onHome(); }}
+         aria-label="СПЕКТР — на главную"
+         style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+        <img src={MARK} className="s-topbar-logo-img" style={{ height: 36 }} alt="" />
+        <span className="s-topbar-logo-text" style={{ fontFamily: 'Manrope, Inter, sans-serif', fontWeight: 800, fontSize: 22, color: '#1A2332', letterSpacing: '-0.01em' }}>СПЕКТР</span>
+      </a>
+      <nav className="s-topbar-nav" aria-label="Основная навигация" style={{ display: 'flex', gap: 28, marginLeft: 48 }}>
+        {['О системе', 'Учебный центр', 'Документы', 'Контакты'].map(l => (
+          <a key={l} href="#" onClick={(e) => e.preventDefault()}
+             style={{ color: '#2F3B4D', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>{l}</a>
+        ))}
+      </nav>
+      <div className="s-topbar-actions" style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <Button variant="ghost" onClick={onLogin}>Войти</Button>
+        <span className="s-topbar-register" style={{ display: 'contents' }}>
+          <Button variant="success" icon="graduation" onClick={onRegister}>Регистрация в Учебном центре</Button>
+        </span>
+        {/* Mobile burger — shown via CSS on small viewports */}
+        <button
+          type="button"
+          className="s-topbar-burger"
+          aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+          aria-expanded={menuOpen}
+          aria-controls="s-topbar-mobile-menu"
+          onClick={() => setMenuOpen(v => !v)}
+        >
+          <Icon name={menuOpen ? 'x' : 'menu'} size={22} />
+        </button>
+      </div>
+      {menuOpen && (
+        <div id="s-topbar-mobile-menu" className="s-topbar-mobile-menu" role="dialog" aria-label="Меню">
+          <nav aria-label="Мобильная навигация" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {['О системе', 'Учебный центр', 'Документы', 'Контакты'].map(l => (
+              <a key={l} href="#" onClick={(e) => { e.preventDefault(); setMenuOpen(false); }}
+                 style={{ padding: '12px 16px', borderRadius: 8, color: '#1A2332', textDecoration: 'none', fontSize: 15, fontWeight: 500 }}>{l}</a>
+            ))}
+          </nav>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid #E4E8EF' }}>
+            <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onLogin && onLogin(); }}>Войти</Button>
+            <Button variant="success" icon="graduation" fullWidth onClick={() => { setMenuOpen(false); onRegister && onRegister(); }}>Регистрация в Учебном центре</Button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
 
 export const Sidebar = ({ active, onNav, user }) => {
   const items = [
@@ -156,27 +204,37 @@ export const Sidebar = ({ active, onNav, user }) => {
         <img src={MARK} style={{ width: 32, height: 32 }} alt="" />
         <span className="s-sidebar-title" style={{ fontFamily: 'Manrope, Inter, sans-serif', fontWeight: 800, fontSize: 20, letterSpacing: '-0.01em' }}>СПЕКТР</span>
       </div>
-      {items.map(it => {
-        const isActive = active === it.id;
-        return (
-          <div key={it.id} onClick={() => onNav && onNav(it.id)}
-            className="s-sidebar-item"
-            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', borderRadius: 8, fontSize: 14, cursor: 'pointer',
-              background: isActive ? '#1B4B7A' : 'transparent',
-              color: isActive ? '#fff' : '#A8C0D6',
-              fontWeight: isActive ? 600 : 500,
-              marginBottom: 2,
-            }}>
-            <Icon name={it.icon} size={18} />
-            <span className="s-sidebar-label">{it.label}</span>
-          </div>
-        );
-      })}
+      <nav aria-label="Основная навигация" style={{ display: 'flex', flexDirection: 'column' }}>
+        {items.map(it => {
+          const isActive = active === it.id;
+          return (
+            <button
+              key={it.id}
+              type="button"
+              onClick={() => onNav && onNav(it.id)}
+              aria-current={isActive ? 'page' : undefined}
+              className="s-sidebar-item"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '11px 12px', borderRadius: 8, fontSize: 14,
+                cursor: 'pointer', border: 'none', textAlign: 'left', fontFamily: 'inherit',
+                background: isActive ? '#1B4B7A' : 'transparent',
+                color: isActive ? '#fff' : '#A8C0D6',
+                fontWeight: isActive ? 600 : 500,
+                marginBottom: 2,
+                transition: 'background 140ms ease, color 140ms ease',
+              }}>
+              <Icon name={it.icon} size={18} />
+              <span className="s-sidebar-label">{it.label}</span>
+            </button>
+          );
+        })}
+      </nav>
       <div className="s-sidebar-user" style={{ marginTop: 'auto', padding: '14px 12px', borderTop: '1px solid rgba(255,255,255,.08)', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 999, background: '#1B4B7A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope', fontWeight: 700, fontSize: 14 }}>ИП</div>
+        <div aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 999, background: '#1B4B7A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope', fontWeight: 700, fontSize: 14 }}>ИП</div>
         <div style={{ fontSize: 13, lineHeight: 1.3 }}>
           <div style={{ fontWeight: 600 }}>{user?.name || 'Иван Петров'}</div>
-          <div style={{ color: '#8A95A5', fontSize: 12 }}>Таб. № {user?.id || '48213'}</div>
+          <div style={{ color: '#A8C0D6', fontSize: 12 }}>Таб. № {user?.id || '48213'}</div>
         </div>
       </div>
     </aside>
@@ -192,13 +250,15 @@ export const BottomNav = ({ active, onNav }) => {
     { id: 'results', icon: 'chart',     label: 'Итоги' },
   ];
   return (
-    <nav className="s-bottom-nav">
+    <nav className="s-bottom-nav" aria-label="Мобильная навигация">
       {items.map(it => {
         const isActive = active === it.id;
         return (
           <button key={it.id} type="button" onClick={() => onNav && onNav(it.id)}
+            aria-current={isActive ? 'page' : undefined}
+            aria-label={it.label}
             className={`s-bottom-nav-item${isActive ? ' active' : ''}`}>
-            <Icon name={it.icon} size={22} color={isActive ? '#1B4B7A' : '#8A95A5'} />
+            <Icon name={it.icon} size={22} color={isActive ? '#1B4B7A' : '#5B6778'} />
             <span>{it.label}</span>
           </button>
         );

@@ -63,7 +63,7 @@ const LoginScreen = ({ onEnter, onBack }) => {
           <img src={LOGO_WHITE} className="s-login-logo" style={{ height: 40 }} alt=""/>
         </div>
         <div style={{ marginTop: 'auto', position: 'relative' }}>
-          <h1 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 44, lineHeight: 1.1, letterSpacing: '-0.02em', margin: 0 }}>Вход в корпоративный портал</h1>
+          <h1 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 44, lineHeight: 1.1, letterSpacing: '-0.02em', margin: 0, color: '#fff' }}>Вход в корпоративный портал</h1>
           <p className="s-login-left-sub" style={{ fontSize: 16, color: '#C7DAEB', lineHeight: 1.6, marginTop: 16, maxWidth: 440 }}>Используйте табельный номер для входа как сотрудник ВТС или зарегистрируйтесь во внешнем Учебном центре.</p>
 
           {/* Trust signals (UI/UX Pro Max: "Trust & Authority" style for enterprise login) */}

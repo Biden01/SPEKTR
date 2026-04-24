@@ -1,5 +1,7 @@
 // Shared icon component — small Lucide-style set (1.5px stroke)
-const Icon = ({ name, size = 20, color = 'currentColor', style }) => {
+const Icon = ({ name, size = 20, color = 'currentColor', style, title, 'aria-hidden': ariaHidden }) => {
+  // Decorative by default (aria-hidden=true). Pass `title` to make it labeled/meaningful for screen readers.
+  const isDecorative = !title && ariaHidden !== false;
   const paths = {
     home: <><path d="M3 10 L12 3 L21 10 V20 a1 1 0 0 1-1 1H4 a1 1 0 0 1-1-1Z"/><path d="M9 21V12h6v9"/></>,
     clipboard: <><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M9 12h6M9 16h4"/></>,
@@ -34,7 +36,15 @@ const Icon = ({ name, size = 20, color = 'currentColor', style }) => {
     keyboard: <><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/></>,
   };
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <svg
+      width={size} height={size} viewBox="0 0 24 24"
+      fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      style={style}
+      aria-hidden={isDecorative || undefined}
+      role={title ? 'img' : undefined}
+      focusable="false"
+    >
+      {title && <title>{title}</title>}
       {paths[name] || null}
     </svg>
   );

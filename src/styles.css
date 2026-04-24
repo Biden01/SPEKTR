@@ -142,6 +142,14 @@ h4 { font-size: var(--text-2xl); font-weight: 700; }
 h5 { font-size: var(--text-xl); font-weight: 700; }
 h6 { font-size: var(--text-lg); font-weight: 600; }
 
+/* Dark-surface text override — keep white on dark panels (login left, sidebar, footer) */
+.s-login-left,
+.s-login-left h1, .s-login-left h2, .s-login-left h3, .s-login-left h4, .s-login-left p,
+.s-sidebar, .s-sidebar h1, .s-sidebar h2, .s-sidebar h3, .s-sidebar h4, .s-sidebar p,
+.s-footer, .s-footer h1, .s-footer h2, .s-footer h3, .s-footer h4, .s-footer p {
+  color: inherit;
+}
+
 p { margin: 0; color: var(--fg-1); }
 
 .text-eyebrow {
@@ -739,4 +747,77 @@ input, textarea, select {
 /* Login trust signals — hide on compact mobile banner */
 @media (max-width: 768px) {
   .s-login-trust { display: none !important; }
+}
+
+/* === a11y: focus-visible rings (WCAG 2.4.7) === */
+.s-btn:focus-visible,
+.s-card-interactive:focus-visible,
+.s-sidebar-item:focus-visible,
+.s-bottom-nav-item:focus-visible {
+  outline: 2px solid #1B4B7A;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(27, 75, 122, 0.15);
+}
+.s-btn:focus:not(:focus-visible) { outline: none; box-shadow: none; }
+
+/* Sidebar item hover state */
+.s-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #fff !important;
+}
+.s-sidebar-item[aria-current="page"]:hover {
+  background: #1B4B7A !important;
+}
+
+/* TopBar mobile burger — hidden on desktop */
+.s-topbar-burger {
+  display: none;
+  width: 40px; height: 40px;
+  background: transparent; border: 1px solid #E4E8EF;
+  border-radius: 8px; cursor: pointer; color: #1A2332;
+  align-items: center; justify-content: center;
+  transition: background 140ms ease;
+}
+.s-topbar-burger:hover { background: #F7F9FC; }
+.s-topbar-burger:focus-visible {
+  outline: 2px solid #1B4B7A; outline-offset: 2px;
+}
+
+/* Mobile dropdown panel under topbar */
+.s-topbar-mobile-menu {
+  position: absolute;
+  top: 72px; left: 0; right: 0;
+  background: #fff;
+  border-bottom: 1px solid #E4E8EF;
+  box-shadow: 0 10px 30px rgba(26, 35, 50, 0.08);
+  padding: 12px 16px 20px;
+  z-index: 9;
+  animation: s-dropdown-in 180ms cubic-bezier(.2,0,0,1);
+}
+@keyframes s-dropdown-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.s-topbar-mobile-menu a:hover { background: #F7F9FC; }
+
+/* Show burger & hide desktop nav/actions under 900px */
+@media (max-width: 900px) {
+  .s-topbar { padding: 0 20px !important; }
+  .s-topbar-nav { display: none !important; }
+  .s-topbar-actions .s-btn:not(.s-topbar-burger) { display: none !important; }
+  .s-topbar-register { display: none !important; }
+  .s-topbar-burger { display: inline-flex; }
+}
+@media (min-width: 901px) {
+  .s-topbar-mobile-menu { display: none !important; }
+}
+
+/* Reduced motion — respect user preference (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
