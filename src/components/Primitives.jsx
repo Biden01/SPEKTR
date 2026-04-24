@@ -5,14 +5,17 @@ import Icon from './Icon.jsx';
 const MARK = '/mark.svg';
 const LOGO_WHITE = '/logo-white.svg';
 
-export const Button = ({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, disabled, style, fullWidth, type }) => {
+export const Button = ({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, disabled, style, fullWidth, type, loading }) => {
   const [hover, setHover] = useState(false);
   const [active, setActive] = useState(false);
+  const isDisabled = disabled || loading;
   const base = {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     fontFamily: 'inherit', fontWeight: 600, borderRadius: 8, border: '1px solid transparent',
-    cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 180ms cubic-bezier(.2,0,0,1)',
+    cursor: isDisabled ? (loading ? 'progress' : 'not-allowed') : 'pointer',
+    transition: 'all 180ms cubic-bezier(.2,0,0,1)',
     whiteSpace: 'nowrap', width: fullWidth ? '100%' : 'auto',
+    opacity: disabled ? 0.55 : 1,
   };
   const sizes = { sm: { padding: '7px 12px', fontSize: 13 }, md: { padding: '10px 18px', fontSize: 14 }, lg: { padding: '14px 24px', fontSize: 16 } };
   const variants = {
@@ -24,16 +27,37 @@ export const Button = ({ children, variant = 'primary', size = 'md', icon, iconR
     quiet:     { background: '#F7F9FC', color: '#1A2332', hover: { background: '#EEF1F6' } },
   };
   const v = variants[variant];
-  const hoverStyle = !disabled && hover ? { ...v.hover, transform: active ? 'translateY(0)' : 'translateY(-1px)' } : {};
+  // Active state: scale(0.97) for tactile press feedback; combined with translateY(0) to ground it.
+  const hoverStyle = !isDisabled && hover
+    ? { ...v.hover, transform: active ? 'translateY(0) scale(0.97)' : 'translateY(-1px)' }
+    : {};
   const { hover: _h, ...baseVariant } = v;
   return (
-    <button type={type} onClick={disabled ? undefined : onClick} disabled={disabled}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setActive(false); }}
-      onMouseDown={() => setActive(true)} onMouseUp={() => setActive(false)}
-      style={{ ...base, ...sizes[size], ...baseVariant, ...(disabled ? { background: '#E4E8EF', color: '#8A95A5', borderColor: 'transparent' } : {}), ...hoverStyle, ...style }}>
-      {icon && <Icon name={icon} size={size === 'lg' ? 20 : 16} />}
+    <button
+      type={type}
+      onClick={isDisabled ? undefined : onClick}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => { setHover(false); setActive(false); }}
+      onMouseDown={() => setActive(true)}
+      onMouseUp={() => setActive(false)}
+      style={{
+        ...base,
+        ...sizes[size],
+        ...baseVariant,
+        ...(disabled && !loading ? { background: '#E4E8EF', color: '#8A95A5', borderColor: 'transparent' } : {}),
+        ...hoverStyle,
+        ...style,
+      }}
+    >
+      {loading ? (
+        <span className="s-btn-spinner" aria-hidden="true" />
+      ) : icon ? (
+        <Icon name={icon} size={size === 'lg' ? 20 : 16} />
+      ) : null}
       {children}
-      {iconRight && <Icon name={iconRight} size={size === 'lg' ? 20 : 16} />}
+      {!loading && iconRight && <Icon name={iconRight} size={size === 'lg' ? 20 : 16} />}
     </button>
   );
 };
@@ -74,6 +98,7 @@ export const Card = ({ children, style, padding = 24, onClick, hoverable, classN
 };
 
 export const Alert = ({ tone = 'info', title, description, action, onAction }) => {
+  const ariaRole = tone === 'bad' ? 'alert' : tone === 'warn' ? 'status' : undefined;
   const tones = {
     bad:  { bg: '#FBECEC', border: '#F2CFD1', ic: '#B8242D', icName: 'alert' },
     warn: { bg: '#FDF4E7', border: '#F2DEB6', ic: '#C77A0F', icName: 'timer' },
@@ -82,13 +107,14 @@ export const Alert = ({ tone = 'info', title, description, action, onAction }) =
   };
   const t = tones[tone];
   return (
-    <div style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 12, border: `1px solid ${t.border}`, background: t.bg, alignItems: 'center' }}>
+    <div role={ariaRole} aria-live={tone === 'bad' ? 'assertive' : tone === 'warn' ? 'polite' : undefined}
+      style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 12, border: `1px solid ${t.border}`, background: t.bg, alignItems: 'center' }}>
       <div style={{ width: 36, height: 36, borderRadius: 8, background: t.ic, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon name={t.icName} size={18} color="#fff" />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: '#1A2332', marginBottom: 2 }}>{title}</div>
-        {description && <div style={{ fontSize: 13, color: '#5B6778' }}>{description}</div>}
+        {description && <div style={{ fontSize: 13, color: '#475060' }}>{description}</div>}
       </div>
       {action && <Button variant="ghost" size="sm" onClick={onAction} iconRight="arrow">{action}</Button>}
     </div>

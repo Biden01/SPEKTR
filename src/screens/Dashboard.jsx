@@ -5,14 +5,14 @@ const DashboardScreen = ({ onStartTest, onLogout }) => (
   <div className="s-dashboard" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, sans-serif', background: '#F7F9FC', color: '#1A2332' }}>
     <Sidebar active="home" user={{ name: 'Иван Петров', id: '48213' }} />
     <main className="s-main" style={{ flex: 1, padding: '28px 40px 60px', overflow: 'auto' }}>
-      <header className="s-main-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-        <div>
-          <div style={{ fontSize: 13, color: '#5B6778', marginBottom: 4 }}>{new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+      <header className="s-main-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, gap: 16 }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: 13, color: '#475060', marginBottom: 4 }}>{new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
           <h1 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 32, letterSpacing: '-0.02em', margin: 0 }}>Здравствуйте, Иван Петров</h1>
-          <div className="s-main-header-sub" style={{ fontSize: 14, color: '#5B6778', marginTop: 4 }}>Электромонтёр 5 разряда · Участок № 3 · Таб. № 48213</div>
+          <div className="s-main-header-sub" style={{ fontSize: 14, color: '#3A4657', marginTop: 4 }}>Электромонтёр 5 разряда · Участок № 3 · Таб. № 48213</div>
         </div>
-        <div className="s-main-header-actions" style={{ display: 'flex', gap: 10 }}>
-          <Button variant="ghost" icon="bell"><span style={{display:'inline-flex',alignItems:'center',gap:6}}>Уведомления <span style={{background:'#B8242D',color:'#fff',fontSize:11,fontWeight:700,padding:'1px 7px',borderRadius:999}}>2</span></span></Button>
+        <div className="s-main-header-actions" style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+          <Button variant="ghost" icon="bell" aria-label="Уведомления: 2 новых"><span style={{display:'inline-flex',alignItems:'center',gap:6}}>Уведомления <span style={{background:'#B8242D',color:'#fff',fontSize:11,fontWeight:700,padding:'1px 7px',borderRadius:999,minWidth:18,textAlign:'center'}}>2</span></span></Button>
           <Button variant="ghost" icon="logout" onClick={onLogout}>Выход</Button>
         </div>
       </header>
@@ -25,26 +25,34 @@ const DashboardScreen = ({ onStartTest, onLogout }) => (
       <div className="s-card-grid-2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, marginBottom: 24 }}>
         <Card padding={28} style={{ borderLeft: '4px solid #1B4B7A' }}>
           <div className="s-daily-card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 20 }}>
-            <div>
+            <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#1B4B7A', marginBottom: 8 }}>Ежедневная проверка</div>
               <h3 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 24, margin: '0 0 8px' }}>10 вопросов · 10 минут</h3>
-              <p style={{ fontSize: 14, color: '#5B6778', margin: 0 }}>Допуск к смене. Проходить до 08:00 каждого рабочего дня.</p>
+              <p style={{ fontSize: 14, color: '#475060', margin: 0 }}>Допуск к смене. Проходить до 08:00 каждого рабочего дня.</p>
             </div>
             <Chip tone="neutral">Не пройдено</Chip>
           </div>
-          <div style={{ height: 8, background: '#E4E8EF', borderRadius: 4, marginTop: 24 }}/>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-            <div style={{ fontSize: 13, color: '#5B6778', fontFamily: 'JetBrains Mono, monospace' }}>Сегодня · 0 / 10</div>
+          {/* Progress bar with striped empty state — clearer than a flat gray bar */}
+          <div style={{ position: 'relative', height: 8, background: 'repeating-linear-gradient(45deg, #EEF1F6 0 8px, #E4E8EF 8px 16px)', borderRadius: 4, marginTop: 24 }}
+               role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={10} aria-label="Прогресс ежедневной проверки"/>
+          <div className="s-daily-card-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475060', fontFamily: 'JetBrains Mono, monospace', fontVariantNumeric: 'tabular-nums' }}>
+              <Icon name="clipboard" size={14} color="#475060"/>
+              Сегодня · 0 / 10
+            </div>
             <Button onClick={onStartTest} iconRight="arrow">Начать</Button>
           </div>
         </Card>
         <Card padding={28} style={{ borderLeft: '4px solid #B8242D' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#B8242D', marginBottom: 8 }}>Ежегодная проверка</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#B8242D' }}>Ежегодная проверка</div>
+            <Chip tone="bad">Срочно</Chip>
+          </div>
           <h3 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 24, margin: '0 0 20px' }}>Осталось 14 дней</h3>
-          <div style={{ display: 'flex', gap: 24, fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: '#5B6778', marginBottom: 20 }}>
-            <div><div style={{ fontFamily:'Manrope', fontSize:22, fontWeight:700, color:'#1A2332' }}>50</div>вопросов</div>
-            <div><div style={{ fontFamily:'Manrope', fontSize:22, fontWeight:700, color:'#1A2332' }}>60</div>минут</div>
-            <div><div style={{ fontFamily:'Manrope', fontSize:22, fontWeight:700, color:'#1A2332' }}>70%</div>проходной</div>
+          <div className="s-annual-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: '#475060', marginBottom: 20 }}>
+            <div><div style={{ fontFamily:'Manrope', fontSize:22, fontWeight:700, color:'#1A2332', lineHeight: 1 }}>50</div><div style={{ marginTop: 4 }}>вопросов</div></div>
+            <div><div style={{ fontFamily:'Manrope', fontSize:22, fontWeight:700, color:'#1A2332', lineHeight: 1 }}>60</div><div style={{ marginTop: 4 }}>минут</div></div>
+            <div><div style={{ fontFamily:'Manrope', fontSize:22, fontWeight:700, color:'#1A2332', lineHeight: 1 }}>70%</div><div style={{ marginTop: 4 }}>проходной</div></div>
           </div>
           <Button variant="danger" fullWidth iconRight="arrow" onClick={onStartTest}>Пройти сейчас</Button>
         </Card>
@@ -52,19 +60,19 @@ const DashboardScreen = ({ onStartTest, onLogout }) => (
 
       <div className="s-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { ic:'film', t:'Видеоуроки', s:'12 новых' },
-          { ic:'target', t:'Теоретический экзамен', s:'5 узлов' },
-          { ic:'shield', t:'Безопасный труд', s:'8 протоколов' },
-          { ic:'chart', t:'История результатов', s:'За 12 месяцев' },
+          { ic:'film',   t:'Видеоуроки',          s:'12 новых',         bg:'#EEF3F8', fg:'#1B4B7A' },
+          { ic:'target', t:'Теоретический экзамен', s:'5 узлов',         bg:'#EAF5EE', fg:'#1F7A3D' },
+          { ic:'shield', t:'Безопасный труд',     s:'8 протоколов',     bg:'#FBECEC', fg:'#B8242D' },
+          { ic:'chart',  t:'История результатов', s:'За 12 месяцев',    bg:'#FDF4E7', fg:'#C77A0F' },
         ].map((c,i)=>(
           <Card key={i} padding={20} hoverable>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: '#EEF3F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name={c.ic} size={22} color="#1B4B7A"/>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name={c.ic} size={22} color={c.fg}/>
               </div>
-              <div>
-                <div style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 15 }}>{c.t}</div>
-                <div style={{ fontSize: 12, color: '#5B6778' }}>{c.s}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.t}</div>
+                <div style={{ fontSize: 12, color: '#475060', marginTop: 2 }}>{c.s}</div>
               </div>
             </div>
           </Card>

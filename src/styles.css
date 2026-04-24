@@ -666,3 +666,77 @@ input, textarea, select {
 .s-login button[style*="#5B6778"] {
   /* inline style wins; skip — handled by direct inline update in component */
 }
+
+/* ====================================================================
+ * Button loading spinner + table header contrast + Results bar stagger
+ * (UI/UX Pro Max — severity HIGH: submit feedback, state visibility)
+ * ==================================================================== */
+
+/* Button loading spinner — ring, 16px, currentColor */
+.s-btn-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spektr-spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+@keyframes spektr-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Input focus ring — stronger feedback */
+.s-login input:focus,
+.s-login input:focus-visible {
+  border-color: #1B4B7A !important;
+  box-shadow: 0 0 0 3px rgba(27, 75, 122, 0.15) !important;
+}
+.s-login input[aria-invalid="true"] {
+  border-color: #B8242D !important;
+}
+.s-login input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(184, 36, 45, 0.15) !important;
+}
+
+/* Form error message shake on mount */
+@keyframes spektr-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-3px); }
+  75%      { transform: translateX(3px); }
+}
+[role="alert"] {
+  animation: spektr-shake 220ms ease-in-out;
+}
+
+/* Results — stagger category bars on mount (key effect from skill) */
+@keyframes spektr-bar-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Table header — bump contrast #5B6778 → #3A4657 */
+.s-table-wrap thead th {
+  color: #3A4657 !important;
+}
+
+/* Dashboard action card hover tooltip affordance — subtle depth lift */
+.s-action-grid .s-card, .s-action-grid > div {
+  min-width: 0;
+}
+
+/* Daily-card foot on mobile */
+@media (max-width: 768px) {
+  .s-daily-card-foot {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .s-daily-card-foot button { width: 100% !important; }
+}
+
+/* Login trust signals — hide on compact mobile banner */
+@media (max-width: 768px) {
+  .s-login-trust { display: none !important; }
+}
