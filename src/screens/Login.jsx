@@ -35,7 +35,24 @@ const LoginScreen = ({ onEnter, onBack }) => {
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 600 }}>
               Пароль
-              <input type="password" defaultValue="••••••••" style={{ padding: '13px 14px', border: '1px solid #E4E8EF', borderRadius: 8, fontFamily: 'inherit', fontSize: 16, color: '#1A2332', minHeight: 48, outline: 'none' }}/>
+              <div style={{ position: 'relative' }}>
+                <input type={showPwd ? 'text' : 'password'} defaultValue="••••••••" style={{ width: '100%', boxSizing: 'border-box', padding: '13px 46px 13px 14px', border: '1px solid #E4E8EF', borderRadius: 8, fontFamily: 'inherit', fontSize: 16, color: '#1A2332', minHeight: 48, outline: 'none' }}/>
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(v => !v)}
+                  aria-label={showPwd ? 'Скрыть пароль' : 'Показать пароль'}
+                  style={{
+                    position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                    width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer',
+                    color: '#5B6778', transition: 'background 140ms ease, color 140ms ease',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#F7F9FC'; e.currentTarget.style.color = '#1A2332'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#5B6778'; }}
+                >
+                  <Icon name={showPwd ? 'eye-off' : 'eye'} size={18}/>
+                </button>
+              </div>
             </label>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#5B6778' }}><input type="checkbox" defaultChecked/> Запомнить меня</label>

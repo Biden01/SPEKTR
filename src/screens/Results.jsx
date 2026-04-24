@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Button, Chip, Card, MARK } from '../components/Primitives.jsx';
 
@@ -5,7 +6,23 @@ const ResultsScreen = ({ onHome, onRetry }) => {
   const score = 84; const correct = 42; const total = 50;
   const passed = score >= 70;
   const R = 90; const C = 2 * Math.PI * R;
-  const offset = C * (1 - score / 100);
+
+  // Animated count-up on mount — easeOutCubic over 1.1s
+  const [animScore, setAnimScore] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const duration = 1100;
+    let raf;
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setAnimScore(score * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [score]);
+  const offset = C * (1 - animScore / 100);
   const cats = [
     { n: 'Специфика',            c: 9, t: 10, col: '#1B4B7A' },
     { n: 'Медицина',             c: 8, t: 10, col: '#1F7A3D' },
@@ -31,7 +48,7 @@ const ResultsScreen = ({ onHome, onRetry }) => {
               <circle cx="110" cy="110" r={R} fill="none" stroke="#EEF1F6" strokeWidth="16"/>
               <circle cx="110" cy="110" r={R} fill="none" stroke={passed ? '#1F7A3D' : '#B8242D'} strokeWidth="16" strokeLinecap="round"
                 strokeDasharray={C} strokeDashoffset={offset} transform="rotate(-90 110 110)"/>
-              <text x="110" y="108" textAnchor="middle" fontFamily="Manrope" fontWeight="800" fontSize="56" fill="#1A2332" style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>{score}%</text>
+              <text x="110" y="108" textAnchor="middle" fontFamily="Manrope" fontWeight="800" fontSize="56" fill="#1A2332" style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>{Math.round(animScore)}%</text>
               <text x="110" y="138" textAnchor="middle" fontFamily="Inter" fontSize="14" fill="#5B6778" style={{ fontVariantNumeric: 'tabular-nums' }}>{correct} / {total}</text>
             </svg>
             <div>
@@ -44,7 +61,7 @@ const ResultsScreen = ({ onHome, onRetry }) => {
                 Проходной балл — 70%. Результат действителен 12 месяцев. Протокол подписан электромастером участка.
               </p>
               <div className="s-results-actions" style={{ display: 'flex', gap: 10 }}>
-                <Button variant="secondary" icon="chart">Скачать протокол PDF</Button>
+                <Button variant="secondary" icon="download">Скачать протокол PDF</Button>
                 {!passed && <Button variant="danger" onClick={onRetry}>Пересдать</Button>}
                 <Button variant="ghost" onClick={onHome}>Вернуться в кабинет</Button>
               </div>

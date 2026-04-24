@@ -415,3 +415,114 @@ body { margin: 0; background: #F7F9FC; font-family: Inter, sans-serif; }
   .screen-nav button { padding: 6px 8px !important; font-size: 11px !important; }
 }
 
+
+/* ====================================================================
+ * UX polish layer — applied per UI/UX Pro Max checklist:
+ * focus-visible rings, timer pulse, keyboard hints, input focus,
+ * table row hover, mini-map hover, option hover.
+ * ==================================================================== */
+
+/* Visible focus states for keyboard navigation (WCAG 2.4.7) */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+.s-test-minimap-cell:focus-visible,
+.s-test-finish-btn:focus-visible {
+  outline: 2px solid #1B4B7A;
+  outline-offset: 2px;
+}
+input:focus-visible,
+input:focus {
+  border-color: #1B4B7A !important;
+  box-shadow: 0 0 0 3px rgba(27, 75, 122, 0.12);
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid #1B4B7A;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Timer danger pulse — triggers when <5 min remain */
+@keyframes spektr-timer-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184, 36, 45, 0.35); }
+  50%      { box-shadow: 0 0 0 8px rgba(184, 36, 45, 0);    }
+}
+.s-timer-danger {
+  animation: spektr-timer-pulse 1.8s ease-in-out infinite;
+}
+
+/* Keyboard hint chips */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5B6778;
+  background: #F7F9FC;
+  border: 1px solid #E4E8EF;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+/* Mini-map cell hover — subtle lift */
+.s-test-minimap-cell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(26, 35, 50, 0.1);
+}
+
+/* Test option hover — border tint */
+.s-test-option:hover {
+  border-color: #B8C0CC !important;
+  background: #FAFBFD !important;
+}
+
+/* Finish-test sidebar button hover */
+.s-test-finish-btn:hover {
+  background: #E1ECF5 !important;
+  border-color: #B9CEE0 !important;
+}
+
+/* Dashboard table row hover */
+.s-table-row:hover {
+  background: #EEF3F8 !important;
+}
+
+/* Link hover transitions */
+a {
+  transition: color 140ms ease, opacity 140ms ease;
+}
+a:hover {
+  opacity: 0.75;
+}
+
+/* Modal fade-in */
+@keyframes spektr-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes spektr-modal-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1);     }
+}
+.s-test-modal-backdrop {
+  animation: spektr-fade-in 160ms ease-out;
+}
+.s-test-modal-backdrop > div {
+  animation: spektr-modal-pop 200ms cubic-bezier(.2, 0, 0, 1);
+}
+
+/* Reduced motion — respect user preference (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

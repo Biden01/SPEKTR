@@ -85,7 +85,7 @@ const DashboardScreen = ({ onStartTest, onLogout }) => (
               ['20.04.2026','Пожарная безопасность','6 / 10 · 60 %','bad','Не сдано'],
               ['18.04.2026','Охрана труда','10 / 10 · 100 %','ok','Сдано'],
             ].map((r,i)=>(
-              <tr key={i} style={{ background: i%2?'#F7F9FC':'#fff' }}>
+              <tr key={i} className="s-table-row" style={{ background: i%2?'#F7F9FC':'#fff', cursor: 'pointer', transition: 'background 140ms ease' }}>
                 <td style={{ padding:'14px 24px', fontSize:14, fontFamily:'JetBrains Mono, monospace' }}>{r[0]}</td>
                 <td style={{ padding:'14px 24px', fontSize:14 }}>{r[1]}</td>
                 <td style={{ padding:'14px 24px', fontSize:14, fontFamily:'JetBrains Mono, monospace' }}>{r[2]}</td>
