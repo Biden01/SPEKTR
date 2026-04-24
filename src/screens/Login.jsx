@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Button, LOGO_WHITE } from '../components/Primitives.jsx';
+import Icon from '../components/Icon.jsx';
 
 const LoginScreen = ({ onEnter, onBack }) => {
   const [tab, setTab] = useState('employee');
+  const [showPwd, setShowPwd] = useState(false);
   return (
     <div className="s-login" style={{ minHeight: '100vh', background: '#F7F9FC', fontFamily: 'Inter, sans-serif', color: '#1A2332', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
       {/* Left brand panel */}
@@ -29,11 +31,11 @@ const LoginScreen = ({ onEnter, onBack }) => {
           <form style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onSubmit={e=>{e.preventDefault(); onEnter && onEnter();}}>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 600 }}>
               {tab==='employee'?'Табельный номер':'E-mail'}
-              <input defaultValue={tab==='employee'?'48213':'ivanov@vts.kz'} style={{ padding: '12px 14px', border: '1px solid #E4E8EF', borderRadius: 6, fontFamily: 'inherit', fontSize: 14, color: '#1A2332' }}/>
+              <input defaultValue={tab==='employee'?'48213':'ivanov@vts.kz'} style={{ padding: '13px 14px', border: '1px solid #E4E8EF', borderRadius: 8, fontFamily: 'inherit', fontSize: 16, color: '#1A2332', minHeight: 48, outline: 'none' }}/>
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, fontWeight: 600 }}>
               Пароль
-              <input type="password" defaultValue="••••••••" style={{ padding: '12px 14px', border: '1px solid #E4E8EF', borderRadius: 6, fontFamily: 'inherit', fontSize: 14, color: '#1A2332' }}/>
+              <input type="password" defaultValue="••••••••" style={{ padding: '13px 14px', border: '1px solid #E4E8EF', borderRadius: 8, fontFamily: 'inherit', fontSize: 16, color: '#1A2332', minHeight: 48, outline: 'none' }}/>
             </label>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#5B6778' }}><input type="checkbox" defaultChecked/> Запомнить меня</label>

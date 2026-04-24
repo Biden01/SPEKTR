@@ -1,5 +1,5 @@
 import Icon from '../components/Icon.jsx';
-import { Button, Chip, Card, Alert, Sidebar } from '../components/Primitives.jsx';
+import { Button, Chip, Card, Alert, Sidebar, BottomNav } from '../components/Primitives.jsx';
 
 const DashboardScreen = ({ onStartTest, onLogout }) => (
   <div className="s-dashboard" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, sans-serif', background: '#F7F9FC', color: '#1A2332' }}>
@@ -95,8 +95,25 @@ const DashboardScreen = ({ onStartTest, onLogout }) => (
           </tbody>
         </table>
         </div>
+        {/* Mobile card list — table alternative */}
+        <div className="s-table-mobile">
+          {[
+            ['22.04.2026','Электробезопасность IV','9 / 10 · 90 %','ok','Сдано'],
+            ['20.04.2026','Пожарная безопасность','6 / 10 · 60 %','bad','Не сдано'],
+            ['18.04.2026','Охрана труда','10 / 10 · 100 %','ok','Сдано'],
+          ].map((r,i)=>(
+            <div key={i} className="s-table-mobile-row">
+              <div className="s-table-mobile-row-info">
+                <div className="s-tmr-name">{r[1]}</div>
+                <div className="s-tmr-meta">{r[0]} &middot; {r[2]}</div>
+              </div>
+              <Chip tone={r[3]}>{r[4]}</Chip>
+            </div>
+          ))}
+        </div>
       </Card>
     </main>
+    <BottomNav active="home" />
   </div>
 );
 

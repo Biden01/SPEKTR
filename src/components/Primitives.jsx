@@ -1,10 +1,13 @@
 // Shared primitive components: Button, Chip, Card, Alert, TopBar, Sidebar
+import { useState } from 'react';
 import Icon from './Icon.jsx';
 
 const MARK = '/mark.svg';
 const LOGO_WHITE = '/logo-white.svg';
 
-export const Button = ({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, disabled, style, fullWidth }) => {
+export const Button = ({ children, variant = 'primary', size = 'md', icon, iconRight, onClick, disabled, style, fullWidth, type }) => {
+  const [hover, setHover] = useState(false);
+  const [active, setActive] = useState(false);
   const base = {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     fontFamily: 'inherit', fontWeight: 600, borderRadius: 8, border: '1px solid transparent',
@@ -13,16 +16,21 @@ export const Button = ({ children, variant = 'primary', size = 'md', icon, iconR
   };
   const sizes = { sm: { padding: '7px 12px', fontSize: 13 }, md: { padding: '10px 18px', fontSize: 14 }, lg: { padding: '14px 24px', fontSize: 16 } };
   const variants = {
-    primary: { background: '#1B4B7A', color: '#fff' },
-    success: { background: '#1F7A3D', color: '#fff' },
-    danger:  { background: '#B8242D', color: '#fff' },
-    secondary: { background: '#fff', color: '#1B4B7A', borderColor: '#1B4B7A' },
-    ghost: { background: 'transparent', color: '#1A2332', borderColor: '#E4E8EF' },
-    quiet: { background: '#F7F9FC', color: '#1A2332' },
+    primary:   { background: '#1B4B7A', color: '#fff', hover: { background: '#153C63', boxShadow: '0 4px 14px rgba(27,75,122,.25)' } },
+    success:   { background: '#1F7A3D', color: '#fff', hover: { background: '#176030', boxShadow: '0 4px 14px rgba(31,122,61,.25)' } },
+    danger:    { background: '#B8242D', color: '#fff', hover: { background: '#941C24', boxShadow: '0 4px 14px rgba(184,36,45,.25)' } },
+    secondary: { background: '#fff', color: '#1B4B7A', borderColor: '#1B4B7A', hover: { background: '#EEF3F8' } },
+    ghost:     { background: 'transparent', color: '#1A2332', borderColor: '#E4E8EF', hover: { background: '#F7F9FC', borderColor: '#D0D7E0' } },
+    quiet:     { background: '#F7F9FC', color: '#1A2332', hover: { background: '#EEF1F6' } },
   };
+  const v = variants[variant];
+  const hoverStyle = !disabled && hover ? { ...v.hover, transform: active ? 'translateY(0)' : 'translateY(-1px)' } : {};
+  const { hover: _h, ...baseVariant } = v;
   return (
-    <button onClick={disabled ? undefined : onClick} disabled={disabled}
-      style={{ ...base, ...sizes[size], ...variants[variant], ...(disabled ? { background: '#E4E8EF', color: '#8A95A5', borderColor: 'transparent' } : {}), ...style }}>
+    <button type={type} onClick={disabled ? undefined : onClick} disabled={disabled}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setActive(false); }}
+      onMouseDown={() => setActive(true)} onMouseUp={() => setActive(false)}
+      style={{ ...base, ...sizes[size], ...baseVariant, ...(disabled ? { background: '#E4E8EF', color: '#8A95A5', borderColor: 'transparent' } : {}), ...hoverStyle, ...style }}>
       {icon && <Icon name={icon} size={size === 'lg' ? 20 : 16} />}
       {children}
       {iconRight && <Icon name={iconRight} size={size === 'lg' ? 20 : 16} />}
@@ -47,15 +55,23 @@ export const Chip = ({ tone = 'neutral', children }) => {
   );
 };
 
-export const Card = ({ children, style, padding = 24, onClick, hoverable, className }) => (
-  <div onClick={onClick} className={className} style={{
-    background: '#fff', border: '1px solid #E4E8EF', borderRadius: 12,
-    boxShadow: '0 4px 20px rgba(26,35,50,0.06)', padding,
-    cursor: onClick || hoverable ? 'pointer' : 'default',
-    transition: 'all 180ms cubic-bezier(.2,0,0,1)',
-    ...style,
-  }}>{children}</div>
-);
+export const Card = ({ children, style, padding = 24, onClick, hoverable, className }) => {
+  const [hover, setHover] = useState(false);
+  const isInteractive = onClick || hoverable;
+  const hoverStyle = isInteractive && hover ? { transform: 'translateY(-2px)', boxShadow: '0 10px 30px rgba(26,35,50,0.10)', borderColor: '#D6E2ED' } : {};
+  return (
+    <div onClick={onClick} className={className}
+      onMouseEnter={() => isInteractive && setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: '#fff', border: '1px solid #E4E8EF', borderRadius: 12,
+        boxShadow: '0 4px 20px rgba(26,35,50,0.06)', padding,
+        cursor: isInteractive ? 'pointer' : 'default',
+        transition: 'all 180ms cubic-bezier(.2,0,0,1)',
+        ...style, ...hoverStyle,
+      }}>{children}</div>
+  );
+};
 
 export const Alert = ({ tone = 'info', title, description, action, onAction }) => {
   const tones = {
@@ -138,6 +154,30 @@ export const Sidebar = ({ active, onNav, user }) => {
         </div>
       </div>
     </aside>
+  );
+};
+
+export const BottomNav = ({ active, onNav }) => {
+  const items = [
+    { id: 'home',    icon: 'home',      label: 'Главная' },
+    { id: 'daily',   icon: 'clipboard', label: 'Проверка' },
+    { id: 'video',   icon: 'film',      label: 'Уроки' },
+    { id: 'exam',    icon: 'target',    label: 'Экзамены' },
+    { id: 'results', icon: 'chart',     label: 'Итоги' },
+  ];
+  return (
+    <nav className="s-bottom-nav">
+      {items.map(it => {
+        const isActive = active === it.id;
+        return (
+          <button key={it.id} type="button" onClick={() => onNav && onNav(it.id)}
+            className={`s-bottom-nav-item${isActive ? ' active' : ''}`}>
+            <Icon name={it.icon} size={22} color={isActive ? '#1B4B7A' : '#8A95A5'} />
+            <span>{it.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 };
 
