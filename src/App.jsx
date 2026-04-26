@@ -14,9 +14,12 @@ const SCREENS = [
 ];
 
 export default function App() {
-  const [s, setS] = useState(() => localStorage.getItem('spektr-screen') || 'landing');
+  const [s, setS] = useState(() => {
+    const saved = localStorage.getItem('spektr-screen');
+    return SCREENS.find(x => x.id === saved) ? saved : 'landing';
+  });
   useEffect(() => localStorage.setItem('spektr-screen', s), [s]);
-  const Cur = SCREENS.find(x => x.id === s).C;
+  const Cur = (SCREENS.find(x => x.id === s) || SCREENS[0]).C;
   return (
     <>
       <Cur
