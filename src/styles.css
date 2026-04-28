@@ -823,6 +823,35 @@ input, textarea, select {
   outline-offset: 2px;
 }
 
+/* Landing — path-selection cards (Enterprise Gateway pattern) */
+.s-path-btn:hover {
+  background: #F7F9FC !important;
+  border-color: #1B4B7A !important;
+  transform: translateX(2px);
+  box-shadow: 0 4px 14px rgba(27, 75, 122, 0.08);
+}
+.s-path-btn:focus-visible {
+  outline: 2px solid #1B4B7A;
+  outline-offset: 2px;
+}
+
+/* Landing responsive — small screens stack hero columns */
+@media (max-width: 900px) {
+  .s-hero { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .s-hero h1 { font-size: 38px !important; }
+  .s-feature-grid { grid-template-columns: 1fr 1fr !important; }
+  .s-howit-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 600px) {
+  .s-hero-section { padding: 56px 20px 56px !important; }
+  .s-hero h1 { font-size: 30px !important; }
+  .s-feature-grid { grid-template-columns: 1fr !important; }
+  .s-howit-grid { grid-template-columns: 1fr !important; }
+  .s-feature-section { padding: 48px 20px !important; }
+  .s-stat-grid { grid-template-columns: 1fr 1fr !important; }
+  .s-stat-grid > div { border-left: none !important; }
+}
+
 /* Reduced motion — respect user preference (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
