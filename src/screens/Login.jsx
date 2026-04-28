@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import { Button, LOGO_WHITE } from '../components/Primitives.jsx';
 import Icon from '../components/Icon.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+
+const DEMO_ACCOUNTS = [
+  { id: 'sidorov',   role: 'employee', label: 'Сидоров А.В.',  sub: 'Просрочки — главный сценарий', tone: 'bad' },
+  { id: 'ivanov',    role: 'employee', label: 'Иванов И.П.',   sub: 'Сотрудник, всё в норме',        tone: 'ok' },
+  { id: 'petrova',   role: 'master',   label: 'Петрова М.С.',  sub: 'Мастер участка',                tone: 'info' },
+  { id: 'kuznetsov', role: 'admin',    label: 'Кузнецов Д.А.', sub: 'Администратор системы',          tone: 'info' },
+  { id: 'akhmetov',  role: 'student',  label: 'Ахметов К.',    sub: 'Внешний слушатель',              tone: 'info' },
+];
 
 const LoginScreen = ({ onEnter, onBack }) => {
+  const { login } = useAuth();
   const [tab, setTab] = useState('employee');
   const [showPwd, setShowPwd] = useState(false);
   const [idValue, setIdValue] = useState(tab === 'employee' ? '48213' : 'ivanov@vts.kz');
@@ -15,6 +25,17 @@ const LoginScreen = ({ onEnter, onBack }) => {
     setTab(id);
     setIdValue(id === 'employee' ? '48213' : 'ivanov@vts.kz');
     setIdErr(''); setPwdErr('');
+  };
+
+  const quickLogin = (userId) => {
+    login(userId);
+    onEnter && onEnter();
+  };
+
+  const toneColor = {
+    bad:  { bg: '#FBECEC', fg: '#941C24', dot: '#B8242D' },
+    ok:   { bg: '#EAF5EE', fg: '#176030', dot: '#1F7A3D' },
+    info: { bg: '#EEF3F8', fg: '#153C63', dot: '#1B4B7A' },
   };
 
   // Inline validation per UX guideline "Validate on blur" (severity: medium)
@@ -36,6 +57,11 @@ const LoginScreen = ({ onEnter, onBack }) => {
     // Simulate async submit feedback per UX guideline (severity: high)
     setTimeout(() => {
       setSubmitting(false);
+      // По табельному номеру выбираем демо-аккаунт; иначе — Иванов по умолчанию
+      const demo = tab === 'employee'
+        ? (idValue === '48156' ? 'sidorov' : idValue === '47002' ? 'petrova' : idValue === 'A-001' ? 'kuznetsov' : 'ivanov')
+        : (idValue.includes('akhmetov') ? 'akhmetov' : 'ivanov');
+      login(demo);
       onEnter && onEnter();
     }, 700);
   };
@@ -154,6 +180,43 @@ const LoginScreen = ({ onEnter, onBack }) => {
             </Button>
             {tab==='study' && !submitting && <Button size="lg" variant="secondary" fullWidth>Зарегистрироваться</Button>}
           </form>
+
+          {/* === DEMO QUICK-LOGIN === */}
+          <div className="s-login-demo" style={{ marginTop: 32, paddingTop: 24, borderTop: '1px dashed #D6E2ED' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#1B4B7A', background: '#EEF3F8', padding: '3px 8px', borderRadius: 4 }}>Демо-режим</span>
+              <span style={{ fontSize: 12, color: '#5B6778' }}>Войти быстро под одной из ролей</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {DEMO_ACCOUNTS.map(acc => {
+                const c = toneColor[acc.tone];
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => quickLogin(acc.id)}
+                    className="s-login-demo-btn"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '10px 14px',
+                      background: '#fff',
+                      border: '1px solid #E4E8EF', borderRadius: 8,
+                      cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'inherit',
+                      transition: 'all 140ms ease',
+                    }}
+                  >
+                    <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 999, background: c.dot, flexShrink: 0 }} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{acc.label}</div>
+                      <div style={{ fontSize: 12, color: '#5B6778', marginTop: 1 }}>{acc.sub}</div>
+                    </span>
+                    <Icon name="arrow" size={14} color="#5B6778" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>

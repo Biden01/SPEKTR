@@ -812,6 +812,17 @@ input, textarea, select {
   .s-topbar-mobile-menu { display: none !important; }
 }
 
+/* Login demo quick-login buttons */
+.s-login-demo-btn:hover {
+  background: #F7F9FC !important;
+  border-color: #1B4B7A !important;
+  transform: translateX(2px);
+}
+.s-login-demo-btn:focus-visible {
+  outline: 2px solid #1B4B7A;
+  outline-offset: 2px;
+}
+
 /* Reduced motion — respect user preference (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
