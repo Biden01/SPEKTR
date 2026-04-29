@@ -1,47 +1,61 @@
 import { useState, useEffect, useMemo } from 'react';
 import Icon from '../components/Icon.jsx';
 import { Button, Chip, Card, MARK } from '../components/Primitives.jsx';
+import { useTest } from '../context/TestContext.jsx';
+import { CATEGORIES, getCategoryById } from '../data/categories.js';
 
 const TestScreen = ({ onFinish, onBack }) => {
-  const total = 50;
-  const [current, setCurrent] = useState(11);
-  // Pre-seed answers for first 11 questions so mini-map reflects "answered" state.
-  const [answers, setAnswers] = useState(() => {
-    const init = {};
-    for (let i = 0; i < 11; i++) init[i] = Math.floor(Math.random() * 4);
-    return init;
-  });
+  const { session, updateAnswers, finishTest } = useTest();
+
+  if (!session || !session.questions?.length) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#F7F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', padding: 40 }}>
+        <Card padding={40} style={{ maxWidth: 480, textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 22, margin: '0 0 8px' }}>Сессия теста не активна</h2>
+          <p style={{ color: '#5B6778', margin: '0 0 20px' }}>Начните тест из кабинета или со страницы старта проверки.</p>
+          <Button onClick={onBack} iconRight="arrow">В кабинет</Button>
+        </Card>
+      </div>
+    );
+  }
+
+  const total = session.questions.length;
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState(session.answers || {});
   const [sel, setSel] = useState(null);
-  const [mins, setMins] = useState(42);
-  const [secs, setSecs] = useState(17);
   const [confirmFinish, setConfirmFinish] = useState(false);
+  const [secLeft, setSecLeft] = useState(session.timeLimit);
 
   useEffect(() => {
     const t = setInterval(() => {
-      setSecs(s => {
-        if (s > 0) return s - 1;
-        setMins(m => m - 1);
-        return 59;
-      });
+      setSecLeft(s => Math.max(0, s - 1));
     }, 1000);
     return () => clearInterval(t);
   }, []);
 
-  const timerLow = mins < 5;
+  useEffect(() => {
+    if (secLeft === 0) {
+      finishTest(sel !== null ? { ...answers, [current]: sel } : answers);
+      onFinish && onFinish();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secLeft]);
+
+  const mins = Math.floor(secLeft / 60);
+  const secs = secLeft % 60;
+  const timerLow = secLeft < 300; // < 5 min
   const timerColor = timerLow ? '#B8242D' : '#1A2332';
 
-  const options = [
-    'Отключить вводной автомат и повесить запрещающий плакат.',
-    'Проверить отсутствие напряжения указателем с проверкой исправности на заведомо работающем участке.',
-    'Наложить переносное заземление на все фазы отключённого оборудования.',
-    'Все перечисленные действия выполняются последовательно.',
-  ];
+  const q = session.questions[current];
+  const cat = getCategoryById(q.category);
 
-  // Save current selection, then move to index.
   const jumpTo = (idx) => {
     const bounded = Math.max(0, Math.min(total - 1, idx));
     const next = sel !== null ? { ...answers, [current]: sel } : answers;
-    if (sel !== null) setAnswers(next);
+    if (sel !== null) {
+      setAnswers(next);
+      updateAnswers(next);
+    }
     setCurrent(bounded);
     setSel(next[bounded] ?? null);
   };
@@ -50,7 +64,9 @@ const TestScreen = ({ onFinish, onBack }) => {
     if (sel === null) return;
     const next = { ...answers, [current]: sel };
     setAnswers(next);
+    updateAnswers(next);
     if (current === total - 1) {
+      finishTest(next);
       onFinish && onFinish();
       return;
     }
@@ -61,7 +77,10 @@ const TestScreen = ({ onFinish, onBack }) => {
   const handleSkip = () => {
     if (current === total - 1) return;
     const next = sel !== null ? { ...answers, [current]: sel } : answers;
-    if (sel !== null) setAnswers(next);
+    if (sel !== null) {
+      setAnswers(next);
+      updateAnswers(next);
+    }
     setCurrent(current + 1);
     setSel(next[current + 1] ?? null);
   };
@@ -69,15 +88,16 @@ const TestScreen = ({ onFinish, onBack }) => {
   const handleBack = () => jumpTo(current - 1);
 
   const tryFinish = () => {
-    const answeredCount = Object.keys(sel !== null ? { ...answers, [current]: sel } : answers).length;
+    const next = sel !== null ? { ...answers, [current]: sel } : answers;
+    const answeredCount = Object.keys(next).length;
     if (answeredCount < total) {
       setConfirmFinish(true);
       return;
     }
+    finishTest(next);
     onFinish && onFinish();
   };
 
-  // Keyboard shortcuts: 1–4, A–D (EN+RU layout ф/и/с/в), ←/→, Enter, Esc
   useEffect(() => {
     const ruToIdx = { 'ф':0,'и':1,'с':2,'в':3,'Ф':0,'И':1,'С':2,'В':3 };
     const onKey = (e) => {
@@ -109,8 +129,18 @@ const TestScreen = ({ onFinish, onBack }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel, current, answers, confirmFinish]);
 
-  const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
+  const answeredCount = useMemo(() => Object.keys(answers).length + (sel !== null && answers[current] === undefined ? 1 : 0), [answers, sel, current]);
   const progressPct = Math.round((answeredCount / total) * 100);
+
+  const catProgress = useMemo(() => {
+    const m = {};
+    CATEGORIES.forEach(c => { m[c.id] = { total: 0, answered: 0 }; });
+    session.questions.forEach((qq, i) => {
+      m[qq.category].total += 1;
+      if (answers[i] !== undefined || (sel !== null && i === current)) m[qq.category].answered += 1;
+    });
+    return m;
+  }, [session.questions, answers, sel, current]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#F7F9FC', fontFamily: 'Inter, sans-serif', color: '#1A2332' }}>
@@ -120,10 +150,10 @@ const TestScreen = ({ onFinish, onBack }) => {
           <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: '#1A2332' }}>СПЕКТР</span>
         </div>
         <div className="s-test-header-mid" style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 12, color: '#5B6778', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 600 }}>Ежегодная проверка знаний</div>
+          <div style={{ fontSize: 12, color: '#5B6778', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 600 }}>{session.title}</div>
           <div style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 18 }}>
             Вопрос <span style={{ color: '#1B4B7A', fontVariantNumeric: 'tabular-nums' }}>{current + 1}</span> из {total}
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#5B6778', marginLeft: 10 }}>· отвечено {answeredCount}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#5B6778', marginLeft: 10 }}>· отвечено {Object.keys(answers).length}</span>
           </div>
         </div>
         <div className={`s-test-header-timer${timerLow ? ' s-timer-danger' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 10, background: timerLow ? '#FBECEC' : '#F7F9FC', padding: '8px 14px', borderRadius: 8 }}>
@@ -132,69 +162,59 @@ const TestScreen = ({ onFinish, onBack }) => {
         </div>
       </header>
 
-      {/* Segmented progress */}
       <div className="s-test-progress" style={{ padding: '16px 40px', background: '#fff', borderBottom: '1px solid #E4E8EF' }}>
         <div style={{ display: 'flex', gap: 3, height: 6 }}>
-          {[{c:'#1B4B7A'},{c:'#1F7A3D'},{c:'#B8242D'},{c:'#C77A0F'},{c:'#2F3B4D'}].map((s,i)=>(
-            <div key={i} style={{ flex: 1, background: '#E4E8EF', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ width: i < 2 ? '100%' : i === 2 ? '20%' : '0%', height: '100%', background: s.c, transition: 'width 400ms ease' }}/>
-            </div>
-          ))}
+          {CATEGORIES.map(c => {
+            const p = catProgress[c.id];
+            const w = p.total ? (p.answered / p.total) * 100 : 0;
+            return (
+              <div key={c.id} style={{ flex: p.total || 0.0001, background: '#E4E8EF', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ width: `${w}%`, height: '100%', background: c.color, transition: 'width 400ms ease' }}/>
+              </div>
+            );
+          })}
         </div>
         <div className="s-test-progress-labels" style={{ display: 'flex', gap: 3, marginTop: 6, fontSize: 11, color: '#5B6778' }}>
-          {['Специфика','Медицина','Пожарная безопасность','ТБ и ОТ','Электробезопасность'].map((n,i)=><div key={i} style={{flex:1, textAlign:'center'}}>{n}</div>)}
+          {CATEGORIES.map(c => {
+            const p = catProgress[c.id];
+            return <div key={c.id} style={{ flex: p.total || 0.0001, textAlign: 'center' }}>{p.total ? c.short : ''}</div>;
+          })}
         </div>
       </div>
 
       <div className="s-test-grid" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 32, padding: '32px 40px', maxWidth: 1280, margin: '0 auto' }}>
-        {/* Question mini-map */}
         <aside className="s-test-nav">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: '#5B6778' }}>Навигация</div>
             <div style={{ fontSize: 12, color: '#5B6778', fontFamily: 'JetBrains Mono, monospace', fontVariantNumeric: 'tabular-nums' }}>{progressPct}%</div>
           </div>
           <div className="s-test-minimap" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-            {[...Array(total)].map((_,i)=>{
+            {[...Array(total)].map((_, i) => {
               const isCurrent = i === current;
               const isAnswered = answers[i] !== undefined;
               const bg = isCurrent ? '#1B4B7A' : isAnswered ? '#1F7A3D' : '#fff';
               const col = isCurrent || isAnswered ? '#fff' : '#5B6778';
               return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => jumpTo(i)}
+                <button key={i} type="button" onClick={() => jumpTo(i)}
                   className="s-test-minimap-cell"
                   style={{
-                    aspectRatio: '1',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: bg,
-                    color: col,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    borderRadius: 4,
+                    aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: bg, color: col, fontSize: 11, fontWeight: 600, borderRadius: 4,
                     border: !isCurrent && !isAnswered ? '1px solid #E4E8EF' : '1px solid transparent',
-                    fontFamily: 'JetBrains Mono, monospace',
-                    cursor: 'pointer',
-                    padding: 0,
+                    fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer', padding: 0,
                     transition: 'transform 120ms ease, box-shadow 120ms ease',
                   }}
                   aria-label={`Вопрос ${i+1}${isAnswered ? ', отвечен' : ''}${isCurrent ? ', текущий' : ''}`}
-                >
-                  {i+1}
-                </button>
+                >{i + 1}</button>
               );
             })}
           </div>
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: '#5B6778' }}>
-            <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{width:12,height:12,background:'#1F7A3D',borderRadius:3}}/>Отвечено ({answeredCount})</div>
+            <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{width:12,height:12,background:'#1F7A3D',borderRadius:3}}/>Отвечено ({Object.keys(answers).length})</div>
             <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{width:12,height:12,background:'#1B4B7A',borderRadius:3}}/>Текущий</div>
-            <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{width:12,height:12,background:'#fff',border:'1px solid #E4E8EF',borderRadius:3}}/>Не пройден ({total - answeredCount})</div>
+            <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{width:12,height:12,background:'#fff',border:'1px solid #E4E8EF',borderRadius:3}}/>Не пройден ({total - Object.keys(answers).length})</div>
           </div>
 
-          {/* Keyboard hints */}
           <div className="s-test-kbdhints" style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #E4E8EF' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: '#5B6778', marginBottom: 10 }}>
               <Icon name="keyboard" size={14} color="#5B6778"/> Горячие клавиши
@@ -207,33 +227,31 @@ const TestScreen = ({ onFinish, onBack }) => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={tryFinish}
-            className="s-test-finish-btn"
+          <button type="button" onClick={tryFinish} className="s-test-finish-btn"
             style={{
               marginTop: 16, width: '100%', padding: '10px 12px',
               background: '#EEF3F8', color: '#1B4B7A', border: '1px solid #D6E2ED',
               borderRadius: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               transition: 'all 140ms ease',
-            }}
-          >
+            }}>
             Завершить тест
           </button>
         </aside>
 
-        {/* Question */}
         <section className="s-test-card-wrap">
           <Card padding={36}>
-            <Chip tone="bad">Электробезопасность</Chip>
-            <h2 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 26, lineHeight: 1.3, margin: '18px 0 28px', letterSpacing: '-0.015em' }}>
-              Какие действия обязательны при подготовке рабочего места к работам со снятием напряжения на электроустановке до 1000 В?
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', background: cat.bg, color: cat.color }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: cat.color }} />
+              {cat.name}
+            </span>
+            <h2 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 24, lineHeight: 1.35, margin: '18px 0 28px', letterSpacing: '-0.015em' }}>
+              {q.text}
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {options.map((opt, i) => {
+              {q.options.map((opt, i) => {
                 const activeOpt = sel === i;
                 return (
-                  <label key={i} onClick={()=>setSel(i)} className="s-test-option" style={{
+                  <label key={i} onClick={() => setSel(i)} className="s-test-option" style={{
                     display: 'flex', gap: 14, padding: '16px 18px',
                     border: `1.5px solid ${activeOpt ? '#1B4B7A' : '#E4E8EF'}`,
                     borderRadius: 10, cursor: 'pointer',
@@ -265,24 +283,20 @@ const TestScreen = ({ onFinish, onBack }) => {
         </section>
       </div>
 
-      {/* Finish confirmation modal */}
       {confirmFinish && (
-        <div
-          onClick={() => setConfirmFinish(false)}
-          className="s-test-modal-backdrop"
-          style={{ position: 'fixed', inset: 0, background: 'rgba(15,45,74,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}
-        >
+        <div onClick={() => setConfirmFinish(false)} className="s-test-modal-backdrop"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,45,74,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 14, padding: 32, maxWidth: 440, width: '100%', boxShadow: '0 24px 60px rgba(15,45,74,0.3)' }}>
             <div style={{ width: 44, height: 44, borderRadius: 10, background: '#FDF4E7', color: '#C77A0F', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
               <Icon name="alert" size={22} color="#C77A0F"/>
             </div>
             <h3 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 22, margin: '0 0 8px' }}>Завершить тест досрочно?</h3>
             <p style={{ fontSize: 14, color: '#5B6778', lineHeight: 1.5, margin: '0 0 20px' }}>
-              Отвечено <strong style={{ color: '#1A2332' }}>{answeredCount} из {total}</strong>. Незаполненные вопросы будут зачтены как неверные.
+              Отвечено <strong style={{ color: '#1A2332' }}>{Object.keys(answers).length} из {total}</strong>. Незаполненные вопросы будут зачтены как неверные.
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <Button variant="ghost" onClick={() => setConfirmFinish(false)}>Продолжить тест</Button>
-              <Button variant="danger" onClick={() => { setConfirmFinish(false); onFinish && onFinish(); }}>Завершить</Button>
+              <Button variant="danger" onClick={() => { setConfirmFinish(false); finishTest(answers); onFinish && onFinish(); }}>Завершить</Button>
             </div>
           </div>
         </div>
