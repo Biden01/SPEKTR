@@ -143,7 +143,7 @@ const AdminOverviewScreen = ({ onNav, onLogout }) => {
                   <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.fullName.split(' ').slice(0, 2).join(' ')}</div>
                   <div style={{ fontSize: 11, color: '#5B6778' }}>Таб. {e.tabNumber} · {e.section}</div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => alert(`Открыть карточку ${e.fullName}`)}>Открыть</Button>
+                <Button variant="ghost" size="sm" onClick={() => onNav && onNav('users')}>Открыть</Button>
               </div>
             ))}
           </div>

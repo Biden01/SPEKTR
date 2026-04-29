@@ -115,7 +115,7 @@ const MasterDashboardScreen = ({ onLogout, onNav }) => {
                       <td style={{ padding:'12px 24px', fontSize:13, fontFamily:'JetBrains Mono, monospace', fontWeight: 600, color: e.lastResult >= 80 ? '#1F7A3D' : e.lastResult >= 70 ? '#C77A0F' : '#B8242D' }}>{e.lastResult}%</td>
                       <td style={{ padding:'12px 24px' }}><Chip tone={st.tone}>{st.l}</Chip></td>
                       <td style={{ padding:'12px 24px' }}>
-                        <Button variant="ghost" size="sm" onClick={() => alert(`Открыть карточку: ${e.fullName}`)}>Открыть</Button>
+                        <Button variant="ghost" size="sm" onClick={() => onNav && onNav('profile')}>Открыть</Button>
                       </td>
                     </tr>
                   );

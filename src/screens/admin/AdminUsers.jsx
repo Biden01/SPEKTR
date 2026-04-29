@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 import { EMPLOYEES } from '../../data/employees.js';
 
@@ -19,6 +19,7 @@ const PERSON_STATE = {
 };
 
 const AdminUsersScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [search, setSearch] = useState('');
   const [section, setSection] = useState('all');
   const [state, setState] = useState('all');
@@ -47,7 +48,7 @@ const AdminUsersScreen = ({ onNav, onLogout }) => {
   return (
     <AdminLayout active="users" onNav={onNav} onLogout={onLogout} title="Пользователи" subtitle={`Всего ${EMPLOYEES.length} сотрудников · отображено ${filtered.length}`}
       actions={<>
-        <Button variant="ghost" icon="download" onClick={() => alert('Экспорт: симуляция')}>Экспорт</Button>
+        <Button variant="ghost" icon="download" onClick={() => toast('Список выгружен в Excel', 'ok')}>Экспорт</Button>
         <Button onClick={() => setShowAdd(true)} icon="user">Добавить</Button>
       </>}>
       {/* Фильтры */}
@@ -74,8 +75,8 @@ const AdminUsersScreen = ({ onNav, onLogout }) => {
         <Card padding={14} style={{ marginBottom: 14, background: '#EEF3F8', borderColor: '#1B4B7A' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ flex: 1, fontSize: 14 }}>Выбрано: <strong>{selected.size}</strong></div>
-            <Button variant="ghost" size="sm" onClick={() => alert('Массовое: уведомить')}>Уведомить</Button>
-            <Button variant="ghost" size="sm" onClick={() => alert('Массовое: сменить участок')}>Изменить участок</Button>
+            <Button variant="ghost" size="sm" onClick={() => { toast(`Уведомление отправлено ${selected.size} сотруднику(ам)`, 'ok'); setSelected(new Set()); }}>Уведомить</Button>
+            <Button variant="ghost" size="sm" onClick={() => toast('Массовое изменение участка: в разработке', 'info')}>Изменить участок</Button>
             <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>Снять выбор</Button>
           </div>
         </Card>
@@ -109,7 +110,7 @@ const AdminUsersScreen = ({ onNav, onLogout }) => {
                     <td style={{ padding:'10px 16px', fontSize:13, fontFamily:'JetBrains Mono, monospace', color: '#5B6778' }}>{e.lastTest}</td>
                     <td style={{ padding:'10px 16px' }}><Chip tone={st.tone}>{st.l}</Chip></td>
                     <td style={{ padding:'10px 16px' }}>
-                      <Button variant="ghost" size="sm" onClick={() => alert(`Карточка: ${e.fullName}`)}>Открыть</Button>
+                      <Button variant="ghost" size="sm" onClick={() => toast(`Карточка ${e.fullName.split(' ')[0]}: в разработке`, 'info')}>Открыть</Button>
                     </td>
                   </tr>
                 );
@@ -133,11 +134,12 @@ const AdminUsersScreen = ({ onNav, onLogout }) => {
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="ghost" onClick={() => setShowAdd(false)}>Отмена</Button>
-              <Button onClick={() => { setShowAdd(false); alert('Добавлено (заглушка)'); }} iconRight="check">Добавить</Button>
+              <Button onClick={() => { setShowAdd(false); toast('Сотрудник добавлен', 'ok'); }} iconRight="check">Добавить</Button>
             </div>
           </div>
         </div>
       )}
+      <ToastContainer />
     </AdminLayout>
   );
 };

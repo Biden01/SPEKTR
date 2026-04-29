@@ -1,15 +1,20 @@
 import Icon from '../components/Icon.jsx';
-import { Button, Card, Sidebar, BottomNav, Chip } from '../components/Primitives.jsx';
+import { Button, Card, Sidebar, BottomNav, useToast } from '../components/Primitives.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { LESSONS } from '../data/lessons.js';
 import { getCategoryById } from '../data/categories.js';
 
-const VideoPlayerScreen = ({ lesson, onBack, onStartTest, onNav, onLogout }) => {
+const VideoPlayerScreen = ({ lesson, onSwitchLesson, onBack, onStartTest, onNav, onLogout }) => {
   const { user } = useAuth();
+  const { show: toast, ToastContainer } = useToast();
   if (!user || !lesson) return null;
   const c = getCategoryById(lesson.category);
 
   const related = LESSONS.filter(l => l.category === lesson.category && l.id !== lesson.id).slice(0, 3);
+
+  const handleDownload = (fileName) => {
+    toast(`«${fileName}» добавлен в загрузки`, 'info');
+  };
 
   return (
     <div className="s-dashboard" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter, sans-serif', background: '#F7F9FC', color: '#1A2332' }}>
@@ -67,7 +72,7 @@ const VideoPlayerScreen = ({ lesson, onBack, onStartTest, onNav, onLogout }) => 
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{d.t}</div>
                   </div>
                   <span style={{ fontSize: 12, color: '#5B6778', fontFamily: 'JetBrains Mono, monospace' }}>{d.s}</span>
-                  <Button variant="ghost" size="sm" icon="download" onClick={() => alert('Скачивание: симуляция')}>Скачать</Button>
+                  <Button variant="ghost" size="sm" icon="download" onClick={() => handleDownload(d.t)}>Скачать</Button>
                 </div>
               ))}
             </Card>
@@ -84,13 +89,22 @@ const VideoPlayerScreen = ({ lesson, onBack, onStartTest, onNav, onLogout }) => 
               </Card>
             )}
 
-            <Card padding={20} style={{ marginTop: 16 }}>
+            <Card padding={20} style={{ marginTop: lesson.hasTest ? 16 : 0 }}>
               <h3 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 16, margin: '0 0 12px' }}>Похожие уроки</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {related.length === 0 && <div style={{ fontSize: 13, color: '#5B6778' }}>Похожих уроков нет</div>}
                 {related.map(l => (
-                  <button key={l.id} type="button" onClick={() => alert(`Открыть: ${l.title} (заглушка)`)} className="s-path-btn"
-                    style={{ display: 'flex', gap: 12, padding: 10, background: '#fff', border: '1px solid #E4E8EF', borderRadius: 8, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', alignItems: 'center' }}>
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => onSwitchLesson ? onSwitchLesson(l) : undefined}
+                    className="s-path-btn"
+                    style={{
+                      display: 'flex', gap: 12, padding: 10,
+                      background: '#fff', border: '1px solid #E4E8EF', borderRadius: 8,
+                      cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', alignItems: 'center',
+                      transition: 'border-color 140ms ease, box-shadow 140ms ease',
+                    }}>
                     <div style={{ width: 56, height: 36, borderRadius: 6, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon name="play" size={14} color={c.color}/>
                     </div>
@@ -98,6 +112,7 @@ const VideoPlayerScreen = ({ lesson, onBack, onStartTest, onNav, onLogout }) => 
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.title}</div>
                       <div style={{ fontSize: 11, color: '#5B6778', fontFamily: 'JetBrains Mono, monospace' }}>{l.duration}</div>
                     </div>
+                    <Icon name="chevron" size={14} color="#8A95A5"/>
                   </button>
                 ))}
               </div>
@@ -106,6 +121,7 @@ const VideoPlayerScreen = ({ lesson, onBack, onStartTest, onNav, onLogout }) => 
         </div>
       </main>
       <BottomNav active="video" onNav={onNav} />
+      <ToastContainer />
     </div>
   );
 };

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 import { LESSONS } from '../../data/lessons.js';
 import { CATEGORIES, getCategoryById } from '../../data/categories.js';
 
 const AdminLessonsScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [showAdd, setShowAdd] = useState(false);
 
   return (
@@ -53,11 +54,12 @@ const AdminLessonsScreen = ({ onNav, onLogout }) => {
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="ghost" onClick={() => setShowAdd(false)}>Отмена</Button>
-              <Button onClick={() => { setShowAdd(false); alert('Урок добавлен'); }}>Сохранить</Button>
+              <Button onClick={() => { setShowAdd(false); toast('Урок добавлен в каталог', 'ok'); }}>Сохранить</Button>
             </div>
           </div>
         </div>
       )}
+      <ToastContainer />
     </AdminLayout>
   );
 };

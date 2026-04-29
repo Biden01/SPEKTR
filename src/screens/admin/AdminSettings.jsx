@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 import { CATEGORIES } from '../../data/categories.js';
 
 const AdminSettingsScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [tab, setTab] = useState('general');
 
   const tabs = [
@@ -49,7 +50,7 @@ const AdminSettingsScreen = ({ onNav, onLogout }) => {
                 Телефон поддержки
                 <input defaultValue="+7 (7232) 00-00-00" style={{ padding: '10px 12px', border: '1px solid #E4E8EF', borderRadius: 8, fontSize: 14, fontFamily: 'inherit' }}/>
               </label>
-              <Button>Сохранить</Button>
+              <Button onClick={() => toast('Настройки сохранены', 'ok')}>Сохранить</Button>
             </div>
           )}
           {tab === 'tests' && (
@@ -70,7 +71,7 @@ const AdminSettingsScreen = ({ onNav, onLogout }) => {
                   </div>
                 </label>
               ))}
-              <div style={{ gridColumn: '1 / -1' }}><Button>Сохранить</Button></div>
+              <div style={{ gridColumn: '1 / -1' }}><Button onClick={() => toast('Параметры тестов сохранены', 'ok')}>Сохранить</Button></div>
             </div>
           )}
           {tab === 'categories' && (
@@ -166,11 +167,12 @@ const AdminSettingsScreen = ({ onNav, onLogout }) => {
                   <div style={{ fontSize: 14, fontWeight: 600 }}>Лог всех изменений базы вопросов (audit)</div>
                 </div>
               </label>
-              <Button>Сохранить</Button>
+              <Button onClick={() => toast('Параметры безопасности сохранены', 'ok')}>Сохранить</Button>
             </div>
           )}
         </div>
       </Card>
+      <ToastContainer />
     </AdminLayout>
   );
 };

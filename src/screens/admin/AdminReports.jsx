@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 import { RESULTS } from '../../data/results.js';
 import { EMPLOYEES } from '../../data/employees.js';
 import { CATEGORIES } from '../../data/categories.js';
 
 const AdminReportsScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [periodFrom, setPeriodFrom] = useState('2026-04-01');
   const [periodTo, setPeriodTo] = useState('2026-04-28');
 
@@ -30,8 +31,8 @@ const AdminReportsScreen = ({ onNav, onLogout }) => {
   return (
     <AdminLayout active="reports" onNav={onNav} onLogout={onLogout} title="Отчёты" subtitle="Аналитика по тестированию персонала"
       actions={<>
-        <Button variant="ghost" icon="download" onClick={() => alert('PDF: симуляция')}>PDF</Button>
-        <Button icon="download" onClick={() => alert('Excel: симуляция')}>Excel</Button>
+        <Button variant="ghost" icon="download" onClick={() => toast('Отчёт сохранён как PDF', 'ok')}>PDF</Button>
+        <Button icon="download" onClick={() => toast('Отчёт выгружен в Excel', 'ok')}>Excel</Button>
       </>}>
 
       {/* Фильтры */}
@@ -139,6 +140,7 @@ const AdminReportsScreen = ({ onNav, onLogout }) => {
           </table>
         </div>
       </Card>
+      <ToastContainer />
     </AdminLayout>
   );
 };

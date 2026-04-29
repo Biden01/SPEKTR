@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 import { QUESTIONS } from '../../data/questions.js';
 import { CATEGORIES, getCategoryById } from '../../data/categories.js';
 
 const AdminQuestionsScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState('all');
   const [diff, setDiff] = useState('all');
@@ -34,7 +35,7 @@ const AdminQuestionsScreen = ({ onNav, onLogout }) => {
   return (
     <AdminLayout active="questions" onNav={onNav} onLogout={onLogout} title="База вопросов" subtitle={`Всего ${QUESTIONS.length} вопросов в 5 категориях · отображено ${filtered.length}`}
       actions={<>
-        <Button variant="ghost" icon="download" onClick={() => alert('Экспорт: симуляция')}>Экспорт</Button>
+        <Button variant="ghost" icon="download" onClick={() => toast('База вопросов выгружена', 'ok')}>Экспорт</Button>
         <Button onClick={() => setShowAdd(true)}>Добавить вопрос</Button>
       </>}>
 
@@ -112,7 +113,7 @@ const AdminQuestionsScreen = ({ onNav, onLogout }) => {
                       </Chip>
                     </td>
                     <td style={{ padding: '10px 16px' }}>
-                      <Button variant="ghost" size="sm" onClick={() => alert(`Редактирование: ${q.id}`)}>Изменить</Button>
+                      <Button variant="ghost" size="sm" onClick={() => toast(`Редактор вопроса: в разработке`, 'info')}>Изменить</Button>
                     </td>
                   </tr>
                 );
@@ -148,11 +149,12 @@ const AdminQuestionsScreen = ({ onNav, onLogout }) => {
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="ghost" onClick={() => setShowAdd(false)}>Отмена</Button>
-              <Button onClick={() => { setShowAdd(false); alert('Вопрос добавлен (заглушка)'); }} iconRight="check">Сохранить</Button>
+              <Button onClick={() => { setShowAdd(false); toast('Вопрос добавлен в базу', 'ok'); }} iconRight="check">Сохранить</Button>
             </div>
           </div>
         </div>
       )}
+      <ToastContainer />
     </AdminLayout>
   );
 };

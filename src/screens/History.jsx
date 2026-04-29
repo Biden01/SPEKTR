@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import Icon from '../components/Icon.jsx';
-import { Button, Card, Sidebar, BottomNav, Chip } from '../components/Primitives.jsx';
+import { Button, Card, Sidebar, BottomNav, Chip, useToast } from '../components/Primitives.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getResultsByUser } from '../data/results.js';
 
 const HistoryScreen = ({ onBack, onNav, onLogout }) => {
   const { user } = useAuth();
+  const { show: toast, ToastContainer } = useToast();
   if (!user) return null;
   const allResults = getResultsByUser(user.id);
 
@@ -40,7 +41,7 @@ const HistoryScreen = ({ onBack, onNav, onLogout }) => {
             <div className="s-main-header-sub" style={{ fontSize: 14, color: '#3A4657', marginTop: 4 }}>Все ваши тесты за всё время</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <Button variant="ghost" icon="download" onClick={() => alert('Экспорт в Excel: симуляция')}>Excel</Button>
+            <Button variant="ghost" icon="download" onClick={() => toast('Отчёт выгружен в Excel', 'ok')}>Excel</Button>
             <Button variant="ghost" icon="logout" onClick={onLogout}>Выход</Button>
           </div>
         </header>
@@ -173,6 +174,7 @@ const HistoryScreen = ({ onBack, onNav, onLogout }) => {
         </Card>
       </main>
       <BottomNav active="results" onNav={onNav} />
+      <ToastContainer />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 // Shared primitive components: Button, Chip, Card, Alert, TopBar, Sidebar
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Icon from './Icon.jsx';
 
 const MARK = '/mark.svg';
@@ -189,14 +189,22 @@ export const TopBar = ({ onLogin, onRegister, onHome }) => {
   );
 };
 
+const getInitials = (name) => {
+  if (!name) return '??';
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (parts[0] || '?').slice(0, 2).toUpperCase();
+};
+
 export const Sidebar = ({ active, onNav, user }) => {
   const items = [
-    { id: 'home', icon: 'home', label: 'Главная' },
-    { id: 'daily', icon: 'clipboard', label: 'Ежедневная проверка' },
-    { id: 'video', icon: 'film', label: 'Видеоуроки' },
-    { id: 'exam', icon: 'target', label: 'Экзамены' },
-    { id: 'safe', icon: 'shield', label: 'Безопасный труд' },
-    { id: 'results', icon: 'chart', label: 'Мои результаты' },
+    { id: 'home',    icon: 'home',      label: 'Главная' },
+    { id: 'daily',   icon: 'clipboard', label: 'Ежедневная проверка' },
+    { id: 'video',   icon: 'film',      label: 'Видеоуроки' },
+    { id: 'exam',    icon: 'target',    label: 'Экзамены' },
+    { id: 'safe',    icon: 'shield',    label: 'Безопасный труд' },
+    { id: 'results', icon: 'chart',     label: 'Мои результаты' },
+    { id: 'profile', icon: 'user',      label: 'Профиль' },
   ];
   return (
     <aside className="s-sidebar" style={{ width: 248, background: '#0F2D4A', color: '#fff', display: 'flex', flexDirection: 'column', padding: '20px 14px', minHeight: '100vh' }}>
@@ -231,10 +239,12 @@ export const Sidebar = ({ active, onNav, user }) => {
         })}
       </nav>
       <div className="s-sidebar-user" style={{ marginTop: 'auto', padding: '14px 12px', borderTop: '1px solid rgba(255,255,255,.08)', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 999, background: '#1B4B7A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope', fontWeight: 700, fontSize: 14 }}>ИП</div>
-        <div style={{ fontSize: 13, lineHeight: 1.3 }}>
-          <div style={{ fontWeight: 600 }}>{user?.name || 'Иван Петров'}</div>
-          <div style={{ color: '#A8C0D6', fontSize: 12 }}>Таб. № {user?.id || '48213'}</div>
+        <div aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 999, background: '#1B4B7A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+          {getInitials(user?.name)}
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.3, minWidth: 0 }}>
+          <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name || 'Пользователь'}</div>
+          <div style={{ color: '#A8C0D6', fontSize: 12 }}>Таб. № {user?.id || '—'}</div>
         </div>
       </div>
     </aside>
@@ -265,6 +275,66 @@ export const BottomNav = ({ active, onNav }) => {
       })}
     </nav>
   );
+};
+
+// ── useToast ──────────────────────────────────────────────────────────────────
+// Usage: const { show: toast, ToastContainer } = useToast();
+//        toast('Файл скачан');   toast('Ошибка', 'bad');
+// ToastContainer must be rendered inside the component's JSX return.
+const TOAST_COLORS = {
+  ok:   { bg: '#EAF5EE', border: '#CFE7D6', text: '#176030', icon: '#1F7A3D', icName: 'check' },
+  bad:  { bg: '#FBECEC', border: '#F2CFD1', text: '#941C24', icon: '#B8242D', icName: 'alert' },
+  info: { bg: '#EEF3F8', border: '#D6E2ED', text: '#153C63', icon: '#1B4B7A', icName: 'bell' },
+  warn: { bg: '#FDF4E7', border: '#F2DEB6', text: '#8C5409', icon: '#C77A0F', icName: 'timer' },
+};
+
+export const useToast = () => {
+  const [toasts, setToasts] = useState([]);
+  const timers = useRef({});
+
+  const show = (msg, tone = 'ok') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, msg, tone }]);
+    timers.current[id] = setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+      delete timers.current[id];
+    }, 3500);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), []);
+
+  const ToastContainer = () => (
+    <div
+      aria-live="polite"
+      aria-atomic="false"
+      style={{
+        position: 'fixed', bottom: 90, right: 24, zIndex: 9999,
+        display: 'flex', flexDirection: 'column', gap: 8,
+        pointerEvents: 'none',
+      }}>
+      {toasts.map(t => {
+        const c = TOAST_COLORS[t.tone] || TOAST_COLORS.ok;
+        return (
+          <div key={t.id} role="status" style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '12px 16px', borderRadius: 10,
+            background: c.bg, border: `1px solid ${c.border}`,
+            color: c.text, fontSize: 14, fontWeight: 500,
+            boxShadow: '0 4px 20px rgba(26,35,50,.14)',
+            fontFamily: 'Inter, sans-serif',
+            animation: 'fadeInUp 180ms ease',
+            pointerEvents: 'auto',
+          }}>
+            <Icon name={c.icName} size={16} color={c.icon} />
+            {t.msg}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  return { show, ToastContainer };
 };
 
 export { MARK, LOGO_WHITE };

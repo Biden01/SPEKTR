@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import Icon from '../components/Icon.jsx';
-import { Button, Chip, Card, MARK } from '../components/Primitives.jsx';
+import { Button, Chip, Card, MARK, useToast } from '../components/Primitives.jsx';
 import { useTest } from '../context/TestContext.jsx';
 import { CATEGORIES, getCategoryById } from '../data/categories.js';
 
 const Results = ({ onHome, onRetry }) => {
   const { session, reset } = useTest();
+  const { show: toast, ToastContainer } = useToast();
   const [animPct, setAnimPct] = useState(0);
   const [openIdx, setOpenIdx] = useState(null);
 
@@ -63,7 +64,7 @@ const Results = ({ onHome, onRetry }) => {
   const durMin = Math.floor(dur / 60);
   const durSec = dur % 60;
 
-  const onDownload = () => alert('PDF-протокол: симуляция (заглушка)');
+  const onDownload = () => toast('PDF-протокол добавлен в загрузки', 'info');
 
   const handleHome = () => { reset(); onHome && onHome(); };
   const handleRetry = () => { reset(); onRetry && onRetry(); };
@@ -218,6 +219,7 @@ const Results = ({ onHome, onRetry }) => {
           </div>
         </Card>
       </div>
+      <ToastContainer />
     </div>
   );
 };

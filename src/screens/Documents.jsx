@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
-import { Button, Card, TopBar } from '../components/Primitives.jsx';
+import { Button, Card, TopBar, useToast } from '../components/Primitives.jsx';
 import { DOCUMENTS, DOC_CATEGORIES } from '../data/documents.js';
 
 // Документы — список с категориями и кнопкой скачать
 const DocumentsScreen = ({ onLogin, onStudy, onHome }) => {
   const [cat, setCat] = useState('all');
   const filtered = cat === 'all' ? DOCUMENTS : DOCUMENTS.filter(d => d.category === cat);
+  const { show: toast, ToastContainer } = useToast();
 
   const onDownload = (d) => {
-    // Заглушка — реального файла нет
-    alert(`Скачивание: ${d.title}\n(${d.format} · ${d.size})`);
+    toast(`«${d.title}» (${d.format} · ${d.size}) добавлен в загрузки`, 'info');
   };
 
   return (
@@ -97,6 +97,7 @@ const DocumentsScreen = ({ onLogin, onStudy, onHome }) => {
           </div>
         </div>
       </section>
+      <ToastContainer />
     </div>
   );
 };

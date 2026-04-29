@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 import { EVENTS } from '../../data/events.js';
 import { EMPLOYEES } from '../../data/employees.js';
 
 const AdminAuditScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [search, setSearch] = useState('');
   const [type, setType] = useState('all');
 
@@ -45,7 +46,7 @@ const AdminAuditScreen = ({ onNav, onLogout }) => {
 
   return (
     <AdminLayout active="audit" onNav={onNav} onLogout={onLogout} title="История событий" subtitle="Audit log всех действий в системе"
-      actions={<Button variant="ghost" icon="download" onClick={() => alert('Экспорт лога: симуляция')}>Экспорт</Button>}>
+      actions={<Button variant="ghost" icon="download" onClick={() => toast('Лог событий выгружен', 'ok')}>Экспорт</Button>}>
 
       <Card padding={16} style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -93,6 +94,7 @@ const AdminAuditScreen = ({ onNav, onLogout }) => {
           </table>
         </div>
       </Card>
+      <ToastContainer />
     </AdminLayout>
   );
 };

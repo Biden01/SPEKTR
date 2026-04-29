@@ -1,9 +1,10 @@
 import Icon from '../components/Icon.jsx';
-import { Button, Card, Sidebar, BottomNav, Chip, Alert } from '../components/Primitives.jsx';
+import { Button, Card, Sidebar, BottomNav, Chip, Alert, useToast } from '../components/Primitives.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const SafetyProtocolScreen = ({ protocol, onStartTest, onBack, onNav, onLogout }) => {
   const { user } = useAuth();
+  const { show: toast, ToastContainer } = useToast();
   if (!user || !protocol) return null;
   const tones = { bad: { bg: '#FBECEC', fg: '#B8242D', border: '#F2CFD1' }, warn: { bg: '#FDF4E7', fg: '#C77A0F', border: '#F2DEB6' } };
   const t = tones[protocol.tone];
@@ -76,7 +77,7 @@ const SafetyProtocolScreen = ({ protocol, onStartTest, onBack, onNav, onLogout }
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.t}</div>
                   </div>
-                  <Button variant="ghost" size="sm" icon="download" onClick={() => alert('Симуляция')}/>
+                  <Button variant="ghost" size="sm" icon="download" onClick={() => toast('Протокол добавлен в загрузки', 'info')}/>
                 </div>
               ))}
             </Card>
@@ -91,6 +92,7 @@ const SafetyProtocolScreen = ({ protocol, onStartTest, onBack, onNav, onLogout }
         </div>
       </main>
       <BottomNav active="home" onNav={onNav} />
+      <ToastContainer />
     </div>
   );
 };

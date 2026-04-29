@@ -152,7 +152,7 @@ export default function App() {
     case 'history':  CurEl = <HistoryScreen      onBack={() => goto('dash')} onNav={onNav} onLogout={onLogoutClick} />; break;
     case 'profile':  CurEl = <ProfileScreen      onBack={() => goto('dash')} onNav={onNav} onLogout={onLogoutClick} />; break;
     case 'video':    CurEl = <VideoCatalogScreen onOpenLesson={(l) => { setSelectedLesson(l); goto('video1'); }} onBack={() => goto('dash')} onNav={onNav} onLogout={onLogoutClick} />; break;
-    case 'video1':   CurEl = <VideoPlayerScreen  lesson={selectedLesson} onBack={() => goto('video')} onStartTest={(l) => { startTest('lesson', { category: l.category, title: 'Тест по уроку' }); goto('test'); }} onNav={onNav} onLogout={onLogoutClick} />; break;
+    case 'video1':   CurEl = <VideoPlayerScreen  lesson={selectedLesson} onSwitchLesson={(l) => setSelectedLesson(l)} onBack={() => goto('video')} onStartTest={(l) => { startTest('lesson', { category: l.category, title: 'Тест по уроку' }); goto('test'); }} onNav={onNav} onLogout={onLogoutClick} />; break;
     case 'safe':     CurEl = <SafetyScreen       onOpenProtocol={(p) => { setSelectedProtocol(p); goto('safe1'); }} onBack={() => goto('dash')} onNav={onNav} onLogout={onLogoutClick} />; break;
     case 'safe1':    CurEl = <SafetyProtocolScreen protocol={selectedProtocol} onBack={() => goto('safe')} onStartTest={(p) => { startTest('protocol', { category: 'labour', title: p.title }); goto('test'); }} onNav={onNav} onLogout={onLogoutClick} />; break;
     case 'exam':     CurEl = <MechanismsScreen   onBack={() => goto('dash')} onNav={onNav} onLogout={onLogoutClick} />; break;
@@ -172,16 +172,5 @@ export default function App() {
     default:         CurEl = <LandingScreen       {...pubProps} />;
   }
 
-  return (
-    <>
-      {CurEl}
-      <nav className="screen-nav">
-        {SCREENS.map(x => (
-          <button key={x.id} className={s === x.id ? 'active' : ''} onClick={() => setS(x.id)}>
-            {x.l}
-          </button>
-        ))}
-      </nav>
-    </>
-  );
+  return CurEl;
 }

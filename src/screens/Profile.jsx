@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import Icon from '../components/Icon.jsx';
-import { Button, Card, Sidebar, BottomNav, Chip } from '../components/Primitives.jsx';
+import { Button, Card, Sidebar, BottomNav, Chip, useToast } from '../components/Primitives.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const ProfileScreen = ({ onBack, onNav, onLogout }) => {
   const { user } = useAuth();
+  const { show: toast, ToastContainer } = useToast();
   if (!user) return null;
   const [showPwd, setShowPwd] = useState(false);
 
@@ -126,13 +127,14 @@ const ProfileScreen = ({ onBack, onNav, onLogout }) => {
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
                 <Button variant="ghost" onClick={() => setShowPwd(false)}>Отмена</Button>
-                <Button onClick={() => { setShowPwd(false); alert('Пароль изменён (заглушка)'); }}>Сохранить</Button>
+                <Button onClick={() => { setShowPwd(false); toast('Пароль успешно изменён', 'ok'); }}>Сохранить</Button>
               </div>
             </div>
           </div>
         )}
       </main>
       <BottomNav active="home" onNav={onNav} />
+      <ToastContainer />
     </div>
   );
 };

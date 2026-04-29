@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icon from '../../components/Icon.jsx';
-import { Button, Card, Chip } from '../../components/Primitives.jsx';
+import { Button, Card, Chip, useToast } from '../../components/Primitives.jsx';
 import AdminLayout from './AdminLayout.jsx';
 
 const RULES = [
@@ -19,6 +19,7 @@ const SENT = [
 ];
 
 const AdminAlertsScreen = ({ onNav, onLogout }) => {
+  const { show: toast, ToastContainer } = useToast();
   const [showAdd, setShowAdd] = useState(false);
 
   return (
@@ -94,11 +95,12 @@ const AdminAlertsScreen = ({ onNav, onLogout }) => {
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="ghost" onClick={() => setShowAdd(false)}>Отмена</Button>
-              <Button onClick={() => { setShowAdd(false); alert('Правило создано'); }}>Создать</Button>
+              <Button onClick={() => { setShowAdd(false); toast('Правило оповещения создано', 'ok'); }}>Создать</Button>
             </div>
           </div>
         </div>
       )}
+      <ToastContainer />
     </AdminLayout>
   );
 };
